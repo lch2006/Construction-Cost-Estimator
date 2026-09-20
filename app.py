@@ -10,7 +10,7 @@ from urllib.parse import quote
 # ============================================================
 
 st.set_page_config(
-    page_title="BuildCost",
+    page_title="BuildCost | Construction Cost Intelligence",
     page_icon="🏗️",
     layout="wide",
     initial_sidebar_state="collapsed",
@@ -22,7 +22,7 @@ st.set_page_config(
 # ============================================================
 
 # CHANGE THIS TO YOUR EMAIL
-CONTACT_EMAIL = "your-email@example.com"
+CONTACT_EMAIL = "lchen07@vt.edu"
 
 PAGES = [
     "Home",
@@ -45,49 +45,172 @@ PROJECT_TYPES = [
 
 
 # ============================================================
-# DESIGN
+# WEBSITE DESIGN
 # ============================================================
 
 st.markdown(
     """
 <style>
 
+:root {
+    --navy: #0F172A;
+    --navy2: #1E293B;
+    --slate: #64748B;
+    --border: #E2E8F0;
+    --background: #F8FAFC;
+    --orange: #F97316;
+    --orange-dark: #EA580C;
+}
+
+
+/* ---------------------------------------------------------
+   MAIN WEBSITE
+--------------------------------------------------------- */
+
 .stApp {
-    background: #F8FAFC;
+    background: var(--background);
 }
 
 .block-container {
     max-width: 1420px;
-    padding-top: 1.5rem;
+    padding-top: 1.4rem;
     padding-bottom: 4rem;
 }
 
 [data-testid="stHeader"] {
-    background: rgba(248, 250, 252, 0.95);
+    background: rgba(248, 250, 252, 0.94);
 }
+
+
+/* ---------------------------------------------------------
+   PULL-OUT SIDEBAR
+--------------------------------------------------------- */
 
 [data-testid="stSidebar"] {
-    background: #0F172A;
-    border-right: 1px solid #1E293B;
-}
-
-[data-testid="stSidebar"] * {
-    color: #F8FAFC;
+    background: var(--navy);
+    border-right: 1px solid #243047;
 }
 
 [data-testid="stSidebar"] hr {
     border-color: #334155;
 }
 
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+    color: #CBD5E1;
+}
+
+
+/* All sidebar navigation buttons */
+
+[data-testid="stSidebar"] .stButton > button {
+    width: 100%;
+    min-height: 48px;
+
+    border-radius: 12px;
+
+    font-weight: 700;
+
+    justify-content: flex-start;
+
+    padding-left: 16px;
+
+    transition: 0.18s ease;
+}
+
+
+/* Non-selected sidebar buttons */
+
+[data-testid="stSidebar"]
+.stButton > button[kind="secondary"] {
+
+    background: #1E293B !important;
+
+    border:
+        1px solid
+        #334155 !important;
+
+    color:
+        #FFFFFF !important;
+}
+
+[data-testid="stSidebar"]
+.stButton > button[kind="secondary"] * {
+
+    color:
+        #FFFFFF !important;
+}
+
+
+/* Hover */
+
+[data-testid="stSidebar"]
+.stButton > button[kind="secondary"]:hover {
+
+    background:
+        #334155 !important;
+
+    border-color:
+        #F97316 !important;
+
+    color:
+        #FFFFFF !important;
+}
+
+
+/* Selected page */
+
+[data-testid="stSidebar"]
+.stButton > button[kind="primary"] {
+
+    background:
+        #F97316 !important;
+
+    border:
+        1px solid
+        #F97316 !important;
+
+    color:
+        #FFFFFF !important;
+}
+
+[data-testid="stSidebar"]
+.stButton > button[kind="primary"] * {
+
+    color:
+        #FFFFFF !important;
+}
+
+
+/* Selected page hover */
+
+[data-testid="stSidebar"]
+.stButton > button[kind="primary"]:hover {
+
+    background:
+        #EA580C !important;
+
+    border-color:
+        #EA580C !important;
+}
+
+
+/* ---------------------------------------------------------
+   HOME HERO
+--------------------------------------------------------- */
+
 .hero {
-    padding: 72px 60px;
-    border-radius: 26px;
+
+    padding:
+        72px 60px;
+
+    border-radius:
+        26px;
 
     background:
         radial-gradient(
             circle at 88% 12%,
-            rgba(249,115,22,0.28),
-            transparent 26%
+            rgba(249, 115, 22, 0.28),
+            transparent 27%
         ),
         linear-gradient(
             135deg,
@@ -96,21 +219,28 @@ st.markdown(
             #1E293B 100%
         );
 
-    color: white;
+    color:
+        white;
 
-    margin-bottom: 28px;
+    margin-bottom:
+        26px;
 
     box-shadow:
-        0 20px 45px
-        rgba(15, 23, 42, 0.12);
+        0 22px 48px
+        rgba(15, 23, 42, 0.13);
 }
 
+
 .hero-badge {
-    display: inline-block;
 
-    padding: 7px 13px;
+    display:
+        inline-block;
 
-    border-radius: 999px;
+    padding:
+        7px 13px;
+
+    border-radius:
+        999px;
 
     background:
         rgba(249, 115, 22, 0.14);
@@ -119,47 +249,68 @@ st.markdown(
         1px solid
         rgba(249, 115, 22, 0.45);
 
-    color: #FDBA74;
+    color:
+        #FDBA74;
 
-    font-size: 0.78rem;
+    font-size:
+        0.78rem;
 
-    font-weight: 800;
+    font-weight:
+        800;
 
-    letter-spacing: 0.08em;
+    letter-spacing:
+        0.08em;
 
-    margin-bottom: 20px;
+    margin-bottom:
+        20px;
 }
 
+
 .hero h1 {
-    margin: 0;
+
+    margin:
+        0;
 
     font-size:
         clamp(
-            2.8rem,
+            2.7rem,
             6vw,
             5rem
         );
 
-    line-height: 1;
+    line-height:
+        1;
 
     letter-spacing:
         -0.05em;
 }
 
+
 .hero p {
-    max-width: 790px;
+
+    max-width:
+        790px;
 
     margin:
         22px 0 0;
 
-    color: #CBD5E1;
+    color:
+        #CBD5E1;
 
-    font-size: 1.1rem;
+    font-size:
+        1.1rem;
 
-    line-height: 1.7;
+    line-height:
+        1.7;
 }
 
+
+/* ---------------------------------------------------------
+   PAGE HEADERS
+--------------------------------------------------------- */
+
 .page-header {
+
     padding:
         34px 38px;
 
@@ -180,8 +331,11 @@ st.markdown(
         28px;
 }
 
+
 .page-header h1 {
-    margin: 0;
+
+    margin:
+        0;
 
     font-size:
         2.35rem;
@@ -190,7 +344,9 @@ st.markdown(
         -0.035em;
 }
 
+
 .page-header p {
+
     margin:
         9px 0 0;
 
@@ -198,13 +354,19 @@ st.markdown(
         #CBD5E1;
 
     max-width:
-        830px;
+        840px;
 
     line-height:
         1.6;
 }
 
+
+/* ---------------------------------------------------------
+   SECTIONS
+--------------------------------------------------------- */
+
 .section-title {
+
     margin-top:
         30px;
 
@@ -224,13 +386,20 @@ st.markdown(
         -0.035em;
 }
 
+
 .section-subtitle {
+
     color:
         #64748B;
 
     margin-bottom:
         22px;
 }
+
+
+/* ---------------------------------------------------------
+   CARDS
+--------------------------------------------------------- */
 
 .feature-card,
 .info-card {
@@ -256,12 +425,16 @@ st.markdown(
         16px;
 }
 
+
 .feature-card {
+
     min-height:
         215px;
 }
 
+
 .feature-card .label {
+
     color:
         #F97316;
 
@@ -274,6 +447,7 @@ st.markdown(
     letter-spacing:
         0.09em;
 }
+
 
 .feature-card h3,
 .info-card h3 {
@@ -288,6 +462,7 @@ st.markdown(
         1.35rem;
 }
 
+
 .feature-card p,
 .info-card p {
 
@@ -300,6 +475,7 @@ st.markdown(
     margin:
         0;
 }
+
 
 .callout {
 
@@ -318,12 +494,15 @@ st.markdown(
 
     margin-top:
         18px;
+
+    color:
+        #7C2D12;
 }
 
-.callout strong {
-    color:
-        #9A3412;
-}
+
+/* ---------------------------------------------------------
+   METRIC CARDS
+--------------------------------------------------------- */
 
 [data-testid="stMetric"] {
 
@@ -345,6 +524,11 @@ st.markdown(
         rgba(15, 23, 42, 0.04);
 }
 
+
+/* ---------------------------------------------------------
+   NORMAL BUTTONS
+--------------------------------------------------------- */
+
 .stButton > button,
 .stDownloadButton > button {
 
@@ -358,6 +542,7 @@ st.markdown(
         700;
 }
 
+
 .stButton > button[kind="primary"] {
 
     background:
@@ -370,6 +555,17 @@ st.markdown(
         white;
 }
 
+
+.stButton > button[kind="primary"]:hover {
+
+    background:
+        #EA580C;
+
+    border-color:
+        #EA580C;
+}
+
+
 .stDownloadButton > button {
 
     background:
@@ -381,6 +577,11 @@ st.markdown(
     color:
         white;
 }
+
+
+/* ---------------------------------------------------------
+   FOOTER
+--------------------------------------------------------- */
 
 .footer {
 
@@ -400,6 +601,11 @@ st.markdown(
     font-size:
         0.86rem;
 }
+
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
 
 @media (max-width: 800px) {
 
@@ -422,7 +628,7 @@ st.markdown(
 
 
 # ============================================================
-# DEFAULT DATA
+# DEFAULT ESTIMATE
 # ============================================================
 
 def create_default_estimate():
@@ -538,7 +744,7 @@ if "estimate_data" not in st.session_state:
 
 
 # ============================================================
-# FUNCTIONS
+# HELPER FUNCTIONS
 # ============================================================
 
 def set_page(page_name):
@@ -548,22 +754,18 @@ def set_page(page_name):
 
 def clean_estimate(data):
 
+    required_columns = [
+        "Category",
+        "Item",
+        "Quantity",
+        "Unit",
+        "Unit Cost ($)",
+    ]
+
+
     df = pd.DataFrame(
         data
     ).copy()
-
-    required_columns = [
-
-        "Category",
-
-        "Item",
-
-        "Quantity",
-
-        "Unit",
-
-        "Unit Cost ($)",
-    ]
 
 
     for column in required_columns:
@@ -605,11 +807,12 @@ def clean_estimate(data):
         "Unit Cost ($)",
     ]:
 
-        df[column] = pd.to_numeric(
-            df[column],
-            errors="coerce",
-        ).fillna(
-            0.0
+        df[column] = (
+            pd.to_numeric(
+                df[column],
+                errors="coerce",
+            )
+            .fillna(0.0)
         )
 
 
@@ -706,15 +909,10 @@ def calculate_costs(df):
 
 
     return (
-
         direct_cost,
-
         contingency_cost,
-
         overhead_cost,
-
         profit_cost,
-
         grand_total,
     )
 
@@ -728,11 +926,11 @@ def show_page_header(
 
         '<div class="page-header">'
 
-        f"<h1>{title}</h1>"
+        f'<h1>{title}</h1>'
 
-        f"<p>{description}</p>"
+        f'<p>{description}</p>'
 
-        "</div>"
+        '</div>'
     )
 
 
@@ -749,9 +947,11 @@ def show_section(
 
     html = (
 
-        f'<div class="section-title">'
+        '<div class="section-title">'
+
         f'{title}'
-        f'</div>'
+
+        '</div>'
     )
 
 
@@ -788,9 +988,9 @@ def show_footer():
         '<br>'
 
         'Estimates are planning tools. '
-        'Verify quantities, unit costs, '
-        'scope, location, and date before '
-        'using them for project decisions.'
+        'Verify quantities, unit costs, scope, '
+        'location, and date before using them '
+        'for project decisions.'
 
         '</div>',
 
@@ -799,7 +999,7 @@ def show_footer():
 
 
 # ============================================================
-# SIDEBAR / HAMBURGER MENU
+# PULL-OUT NAVIGATION MENU
 # ============================================================
 
 with st.sidebar:
@@ -807,9 +1007,10 @@ with st.sidebar:
     st.markdown(
 
         '<div style="'
-        'font-size:1.65rem;'
+        'font-size:1.75rem;'
         'font-weight:900;'
-        'margin-top:8px;'
+        'margin-top:6px;'
+        'color:white;'
         '">'
 
         '🏗️ BUILDCOST'
@@ -827,11 +1028,6 @@ with st.sidebar:
 
     st.divider()
 
-
-    # Sidebar buttons are intentionally used
-    # instead of a radio widget.
-    # This avoids the previous navigation
-    # session-state conflicts.
 
     for page_name in PAGES:
 
@@ -891,12 +1087,12 @@ with st.sidebar:
 
 
     st.caption(
-        "BuildCost v5.0"
+        "BuildCost v6.0"
     )
 
 
 # ============================================================
-# CURRENT ESTIMATE
+# CURRENT PROJECT COSTS
 # ============================================================
 
 page = (
@@ -941,7 +1137,9 @@ if page == "Home":
         '<br>'
 
         '<span style="color:#FB923C;">'
+
         'Estimate faster.'
+
         '</span>'
 
         '</h1>'
@@ -952,10 +1150,10 @@ if page == "Home":
         'platform for contractors, engineers, '
         'developers, and project teams. '
 
-        'Build estimates, organize quantities and '
+        'Create estimates, organize quantities and '
         'unit prices, analyze where project money '
         'is being spent, and understand early-stage '
-        'construction costs in one workspace.'
+        'construction costs in one clear workspace.'
 
         '</p>'
 
@@ -999,7 +1197,7 @@ if page == "Home":
                 ("Cost Estimator",),
 
             key=
-                "home_estimate_button",
+                "home_create_estimate",
         )
 
 
@@ -1019,7 +1217,7 @@ if page == "Home":
                 ("About BuildCost",),
 
             key=
-                "home_about_button",
+                "home_about_buildcost",
         )
 
 
@@ -1143,15 +1341,15 @@ if page == "Home":
 
     m3.metric(
         "Estimate Items",
-        len(
-            current_df
-        ),
+        len(current_df),
     )
 
 
     category_count = (
 
-        current_df["Category"]
+        current_df[
+            "Category"
+        ]
 
         .replace(
             "",
@@ -1270,70 +1468,68 @@ elif page == "Cost Estimator":
 
         "Estimate items",
 
-        "Edit the existing rows or add "
-        "your own construction activities.",
+        "Edit existing rows or add your "
+        "own construction activities.",
     )
 
 
-    edited_df = (
-        st.data_editor(
+    edited_df = st.data_editor(
 
-            st.session_state.estimate_data,
+        st.session_state.estimate_data,
 
-            num_rows=
-                "dynamic",
+        num_rows=
+            "dynamic",
 
-            hide_index=
-                True,
+        hide_index=
+            True,
 
-            use_container_width=
-                True,
+        use_container_width=
+            True,
 
-            key=
-                "estimate_editor",
+        key=
+            "estimate_editor",
 
-            column_config={
+        column_config={
 
-                "Category":
-                    st.column_config.TextColumn(
-                        "Category"
-                    ),
+            "Category":
+                st.column_config.TextColumn(
+                    "Category"
+                ),
 
-                "Item":
-                    st.column_config.TextColumn(
-                        "Item"
-                    ),
+            "Item":
+                st.column_config.TextColumn(
+                    "Item"
+                ),
 
-                "Quantity":
-                    st.column_config.NumberColumn(
+            "Quantity":
+                st.column_config.NumberColumn(
 
-                        "Quantity",
+                    "Quantity",
 
-                        min_value=
-                            0.0,
+                    min_value=
+                        0.0,
 
-                        format=
-                            "%.2f",
-                    ),
+                    format=
+                        "%.2f",
+                ),
 
-                "Unit":
-                    st.column_config.TextColumn(
-                        "Unit"
-                    ),
+            "Unit":
+                st.column_config.TextColumn(
+                    "Unit"
+                ),
 
-                "Unit Cost ($)":
-                    st.column_config.NumberColumn(
+            "Unit Cost ($)":
+                st.column_config.NumberColumn(
 
-                        "Unit Cost ($)",
+                    "Unit Cost ($)",
 
-                        min_value=
-                            0.0,
+                    min_value=
+                        0.0,
 
-                        format=
-                            "$%.2f",
-                    ),
-            },
-        )
+                    format=
+                        "$%.2f",
+                ),
+        },
     )
 
 
@@ -1453,27 +1649,30 @@ elif page == "Cost Estimator":
 
 
     csv_data = (
+
         estimate_df
+
         .to_csv(
             index=False
         )
+
         .encode(
             "utf-8"
         )
     )
 
 
-    export1, export2 = (
+    export_col, spacer = (
         st.columns(
             [
-                1.3,
+                1.4,
                 4,
             ]
         )
     )
 
 
-    with export1:
+    with export_col:
 
         st.download_button(
 
@@ -1565,8 +1764,7 @@ elif page == "Cost Analytics":
     if not category_df.empty:
 
         largest_category = (
-            category_df
-            .iloc[0]["Category"]
+            category_df.iloc[0]["Category"]
         )
 
     else:
@@ -1577,10 +1775,7 @@ elif page == "Cost Analytics":
     if not analytics_df.empty:
 
         average_cost = float(
-
-            analytics_df[
-                "Total Cost"
-            ].mean()
+            analytics_df["Total Cost"].mean()
         )
 
     else:
@@ -1644,23 +1839,21 @@ elif page == "Cost Analytics":
         not category_df.empty
     ):
 
-        fig = (
-            px.bar(
+        fig = px.bar(
 
-                category_df,
+            category_df,
 
-                x=
-                    "Total Cost",
+            x=
+                "Total Cost",
 
-                y=
-                    "Category",
+            y=
+                "Category",
 
-                orientation=
-                    "h",
+            orientation=
+                "h",
 
-                text_auto=
-                    ".2s",
-            )
+            text_auto=
+                ".2s",
         )
 
 
@@ -1686,20 +1879,25 @@ elif page == "Cost Analytics":
 
 
         fig.update_yaxes(
+
             categoryorder=
                 "total ascending"
         )
 
 
         st.plotly_chart(
+
             fig,
-            use_container_width=True,
+
+            use_container_width=
+                True,
         )
 
 
     else:
 
         st.info(
+
             "Enter quantities and unit costs "
             "in the Cost Estimator to "
             "generate analytics."
@@ -1720,7 +1918,7 @@ elif page == "Cost Analytics":
                 ("Cost Estimator",),
 
             key=
-                "analytics_estimator_button",
+                "analytics_go_estimator",
         )
 
 
@@ -1847,22 +2045,31 @@ elif page == "Project Information":
     with left:
 
         st.text_input(
+
             "Project name",
-            key="project_name",
+
+            key=
+                "project_name",
         )
 
 
         st.text_input(
+
             "Client",
-            key="client",
+
+            key=
+                "client",
         )
 
 
     with right:
 
         st.text_input(
+
             "Project location",
-            key="project_location",
+
+            key=
+                "project_location",
         )
 
 
@@ -1895,6 +2102,7 @@ elif page == "Project Information":
 
 
     st.info(
+
         "Project information is kept "
         "for the current app session."
     )
@@ -1973,7 +2181,7 @@ elif page == "About BuildCost":
     )
 
 
-    about_hero = (
+    about_html = (
 
         '<div class="hero">'
 
@@ -1988,7 +2196,9 @@ elif page == "About BuildCost":
         '<br>'
 
         '<span style="color:#FB923C;">'
+
         'Better project planning.'
+
         '</span>'
 
         '</h1>'
@@ -2010,8 +2220,11 @@ elif page == "About BuildCost":
 
 
     st.markdown(
-        about_hero,
-        unsafe_allow_html=True,
+
+        about_html,
+
+        unsafe_allow_html=
+            True,
     )
 
 
@@ -2064,9 +2277,9 @@ elif page == "About BuildCost":
             '</h3>'
 
             '<p>'
-            'Turn cost information into useful '
-            'project metrics, summaries, '
-            'and visualizations.'
+            'Turn cost information into '
+            'useful project metrics, '
+            'summaries, and visualizations.'
             '</p>'
 
             '</div>',
@@ -2122,13 +2335,16 @@ elif page == "About BuildCost":
         '<div class="callout">'
 
         '<strong>'
+
         'BuildCost is currently an '
         'early-stage estimating tool.'
+
         '</strong> '
 
         'Future versions can add saved accounts, '
-        'regional pricing databases, labor/material/'
-        'equipment breakdowns, and professional reports.'
+        'regional pricing databases, '
+        'labor/material/equipment breakdowns, '
+        'and professional reports.'
 
         '</div>',
 
@@ -2177,7 +2393,8 @@ elif page == "Contact":
 
 
         with st.form(
-            "contact_form"
+            "contact_form",
+            clear_on_submit=False,
         ):
 
             contact_name = (
@@ -2257,6 +2474,7 @@ elif page == "Contact":
             ):
 
                 st.warning(
+
                     "Please enter your name, "
                     "email, and message."
                 )
@@ -2269,6 +2487,7 @@ elif page == "Contact":
             ):
 
                 st.warning(
+
                     "Replace CONTACT_EMAIL "
                     "near the top of app.py "
                     "with the email address "
@@ -2323,9 +2542,11 @@ elif page == "Contact":
                 st.markdown(
 
                     f'<a href="{mailto_url}">'
-                    f'Open your email app '
-                    f'to send the message'
-                    f'</a>',
+
+                    'Open your email app '
+                    'to send the message'
+
+                    '</a>',
 
                     unsafe_allow_html=True,
                 )
