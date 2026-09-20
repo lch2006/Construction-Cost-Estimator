@@ -1,8 +1,8 @@
-import streamlit as st
+import re
+import numpy as np
 import pandas as pd
 import plotly.express as px
-from urllib.parse import quote
-
+import streamlit as st
 
 st.set_page_config(
     page_title="BuildCost | Construction Cost Intelligence",
@@ -11,1061 +11,235 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-
-# ============================================================
-# SETTINGS
-# ============================================================
-
-# CHANGE THIS TO YOUR EMAIL
-CONTACT_EMAIL = "lchen07@vt.edu"
-
-
-PAGES = [
-    "Home",
-    "Cost Estimator",
-    "Scenario Comparison",
-    "Cost Analytics",
-    "Cost Library",
-    "Project Information",
-    "About BuildCost",
-    "Contact",
-]
-
-
-PROJECT_TYPES = [
-    "Land Development",
-    "Commercial",
-    "Residential",
-    "Infrastructure",
-    "Transportation",
-    "Utilities",
-    "Other",
-]
-
-
-BASE_COLUMNS = [
-    "Category",
-    "Item",
-    "Quantity",
-    "Unit",
-    "Unit Cost ($)",
-]
-
-
-# ============================================================
-# WEBSITE DESIGN
-# ============================================================
+PAGES = ["Dashboard", "Estimate", "Risk Analysis", "Compare Scenarios", "Analytics", "About"]
+PROJECT_TYPES = ["Land Development", "Commercial", "Residential", "Infrastructure", "Transportation", "Utilities", "Other"]
+BASE_COLUMNS = ["Category", "Item", "Quantity", "Unit", "Unit Cost ($)"]
 
 st.markdown(
     """
 <style>
-
-:root {
-    --navy:#0F172A;
-    --navy2:#1E293B;
-    --slate:#64748B;
-    --border:#E2E8F0;
-    --background:#F8FAFC;
-    --orange:#F97316;
-    --orange-dark:#EA580C;
-}
-
-
-/* MAIN APP */
-
-.stApp {
-    background:var(--background);
-}
-
-
-.block-container {
-    max-width:1420px;
-    padding-top:1.4rem;
-    padding-bottom:4rem;
-}
-
-
-[data-testid="stHeader"] {
-    background:rgba(248,250,252,.94);
-}
-
-
-/* SIDEBAR */
-
-[data-testid="stSidebar"] {
-    background:var(--navy);
-    border-right:1px solid #243047;
-}
-
-
-[data-testid="stSidebar"] hr {
-    border-color:#334155;
-}
-
-
-[data-testid="stSidebar"]
-[data-testid="stCaptionContainer"] {
-    color:#CBD5E1;
-}
-
-
-/* ALL SIDEBAR BUTTONS */
-
-[data-testid="stSidebar"]
-.stButton > button {
-
-    width:100%;
-
-    min-height:46px;
-
-    justify-content:flex-start;
-
-    padding-left:15px;
-
-    border-radius:11px;
-
-    font-weight:700;
-
-    background:#1E293B !important;
-
-    border:1px solid #334155 !important;
-
-    color:#FFFFFF !important;
-
-    transition:.18s ease;
-}
-
-
-[data-testid="stSidebar"]
-.stButton > button * {
-
-    color:#FFFFFF !important;
-}
-
-
-[data-testid="stSidebar"]
-.stButton > button:hover {
-
-    background:#334155 !important;
-
-    border-color:#F97316 !important;
-}
-
-
-/* CURRENT SIDEBAR PAGE */
-
-[data-testid="stSidebar"]
-.stButton > button[kind="primary"] {
-
-    background:#F97316 !important;
-
-    border-color:#F97316 !important;
-}
-
-
-[data-testid="stSidebar"]
-.stButton > button[kind="primary"]:hover {
-
-    background:#EA580C !important;
-
-    border-color:#EA580C !important;
-}
-
-
-/* HERO */
-
-.hero {
-
-    padding:72px 60px;
-
-    border-radius:26px;
-
-    background:
-        radial-gradient(
-            circle at 88% 12%,
-            rgba(249,115,22,.28),
-            transparent 27%
-        ),
-
-        linear-gradient(
-            135deg,
-            #0F172A 0%,
-            #172033 55%,
-            #1E293B 100%
-        );
-
-    color:white;
-
-    margin-bottom:26px;
-
-    box-shadow:
-        0 22px 48px
-        rgba(15,23,42,.13);
-}
-
-
-.hero-badge {
-
-    display:inline-block;
-
-    padding:7px 13px;
-
-    border-radius:999px;
-
-    background:
-        rgba(249,115,22,.14);
-
-    border:
-        1px solid
-        rgba(249,115,22,.45);
-
-    color:#FDBA74;
-
-    font-size:.78rem;
-
-    font-weight:800;
-
-    letter-spacing:.08em;
-
-    margin-bottom:20px;
-}
-
-
-.hero h1 {
-
-    margin:0;
-
-    font-size:
-        clamp(
-            2.7rem,
-            6vw,
-            5rem
-        );
-
-    line-height:1;
-
-    letter-spacing:-.05em;
-}
-
-
-.hero p {
-
-    max-width:820px;
-
-    margin:22px 0 0;
-
-    color:#CBD5E1;
-
-    font-size:1.08rem;
-
-    line-height:1.7;
-}
-
-
-/* PAGE HEADER */
-
-.page-header {
-
-    padding:34px 38px;
-
-    border-radius:22px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #0F172A,
-            #1E293B
-        );
-
-    color:white;
-
-    margin-bottom:28px;
-}
-
-
-.page-header h1 {
-
-    margin:0;
-
-    font-size:2.35rem;
-
-    letter-spacing:-.035em;
-}
-
-
-.page-header p {
-
-    margin:9px 0 0;
-
-    color:#CBD5E1;
-
-    max-width:880px;
-
-    line-height:1.6;
-}
-
-
-/* SECTION HEADERS */
-
-.section-title {
-
-    margin-top:30px;
-
-    margin-bottom:5px;
-
-    color:#0F172A;
-
-    font-size:1.9rem;
-
-    font-weight:800;
-
-    letter-spacing:-.035em;
-}
-
-
-.section-subtitle {
-
-    color:#64748B;
-
-    margin-bottom:22px;
-}
-
-
-/* CARDS */
-
-.feature-card,
-.info-card {
-
-    padding:28px;
-
-    background:white;
-
-    border:
-        1px solid
-        #E2E8F0;
-
-    border-radius:20px;
-
-    box-shadow:
-        0 7px 24px
-        rgba(15,23,42,.05);
-
-    margin-bottom:16px;
-}
-
-
-.feature-card {
-    min-height:210px;
-}
-
-
-.feature-card .label {
-
-    color:#F97316;
-
-    font-size:.78rem;
-
-    font-weight:800;
-
-    letter-spacing:.09em;
-}
-
-
-.feature-card h3,
-.info-card h3 {
-
-    color:#0F172A;
-
-    margin:14px 0 9px;
-
-    font-size:1.35rem;
-}
-
-
-.feature-card p,
-.info-card p {
-
-    color:#64748B;
-
-    line-height:1.65;
-
-    margin:0;
-}
-
-
-/* ORANGE INFORMATION BOX */
-
-.callout {
-
-    padding:22px 26px;
-
-    border-radius:18px;
-
-    background:#FFF7ED;
-
-    border:
-        1px solid
-        #FED7AA;
-
-    color:#7C2D12;
-
-    margin:18px 0;
-}
-
-
-/* METRICS */
-
-[data-testid="stMetric"] {
-
-    background:white;
-
-    border:
-        1px solid
-        #E2E8F0;
-
-    padding:21px;
-
-    border-radius:18px;
-
-    box-shadow:
-        0 5px 18px
-        rgba(15,23,42,.04);
-}
-
-
-/* NORMAL BUTTONS */
-
-.stButton > button,
-.stDownloadButton > button {
-
-    min-height:46px;
-
-    border-radius:12px;
-
-    font-weight:700;
-}
-
-
-.stButton > button[kind="primary"] {
-
-    background:#F97316;
-
-    border-color:#F97316;
-
-    color:white;
-}
-
-
-.stButton > button[kind="primary"]:hover {
-
-    background:#EA580C;
-
-    border-color:#EA580C;
-}
-
-
-.stDownloadButton > button {
-
-    background:#0F172A;
-
-    border-color:#0F172A;
-
-    color:white;
-}
-
-
-/* FOOTER */
-
-.footer {
-
-    margin-top:55px;
-
-    padding-top:22px;
-
-    border-top:
-        1px solid
-        #E2E8F0;
-
-    color:#94A3B8;
-
-    font-size:.86rem;
-}
-
-
-/* MOBILE */
-
-@media (max-width:800px) {
-
-    .hero {
-        padding:48px 28px;
-    }
-
-    .page-header {
-        padding:28px 24px;
-    }
-}
-
+:root{--navy:#0F172A;--navy2:#1E293B;--orange:#F97316;--orange2:#EA580C;--slate:#64748B;--border:#E2E8F0;--bg:#F8FAFC}
+.stApp{background:var(--bg)}
+.block-container{max-width:1420px;padding-top:1.35rem;padding-bottom:4rem}
+[data-testid="stHeader"]{background:rgba(248,250,252,.95)}
+[data-testid="stSidebar"]{background:var(--navy);border-right:1px solid #243047}
+[data-testid="stSidebar"] hr{border-color:#334155}
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"]{color:#CBD5E1}
+[data-testid="stSidebar"] .stButton>button{width:100%;min-height:46px;justify-content:flex-start;padding-left:15px;border-radius:11px;font-weight:700;background:#1E293B!important;border:1px solid #334155!important;color:#fff!important;transition:.18s ease}
+[data-testid="stSidebar"] .stButton>button *{color:#fff!important}
+[data-testid="stSidebar"] .stButton>button:hover{background:#334155!important;border-color:#F97316!important}
+[data-testid="stSidebar"] .stButton>button[kind="primary"]{background:#F97316!important;border-color:#F97316!important}
+[data-testid="stSidebar"] .stButton>button[kind="primary"]:hover{background:#EA580C!important;border-color:#EA580C!important}
+.hero{padding:72px 60px;border-radius:26px;background:radial-gradient(circle at 88% 12%,rgba(249,115,22,.28),transparent 27%),linear-gradient(135deg,#0F172A 0%,#172033 55%,#1E293B 100%);color:#fff;margin-bottom:26px;box-shadow:0 22px 48px rgba(15,23,42,.13)}
+.hero-badge{display:inline-block;padding:7px 13px;border-radius:999px;background:rgba(249,115,22,.14);border:1px solid rgba(249,115,22,.45);color:#FDBA74;font-size:.78rem;font-weight:800;letter-spacing:.08em;margin-bottom:20px}
+.hero h1{margin:0;font-size:clamp(2.7rem,6vw,5rem);line-height:1;letter-spacing:-.05em}
+.hero p{max-width:840px;margin:22px 0 0;color:#CBD5E1;font-size:1.08rem;line-height:1.7}
+.page-header{padding:34px 38px;border-radius:22px;background:linear-gradient(135deg,#0F172A,#1E293B);color:#fff;margin-bottom:28px}
+.page-header h1{margin:0;font-size:2.35rem;letter-spacing:-.035em}.page-header p{margin:9px 0 0;color:#CBD5E1;max-width:900px;line-height:1.6}
+.section-title{margin-top:30px;margin-bottom:5px;color:#0F172A;font-size:1.9rem;font-weight:800;letter-spacing:-.035em}.section-subtitle{color:#64748B;margin-bottom:22px}
+.feature-card,.info-card,.metric-card,.total-card{background:#fff;border:1px solid #E2E8F0;border-radius:20px;box-shadow:0 7px 24px rgba(15,23,42,.05)}
+.feature-card,.info-card{padding:28px;margin-bottom:16px}.feature-card{min-height:210px}.feature-card .label{color:#F97316;font-size:.78rem;font-weight:800;letter-spacing:.09em}.feature-card h3,.info-card h3{color:#0F172A;margin:14px 0 9px;font-size:1.35rem}.feature-card p,.info-card p{color:#64748B;line-height:1.65;margin:0}
+.callout{padding:22px 26px;border-radius:18px;background:#FFF7ED;border:1px solid #FED7AA;color:#7C2D12;margin:18px 0}
+.metric-card{padding:20px 20px 22px;min-height:118px;margin-bottom:12px}.metric-label{color:#64748B;font-size:.85rem;font-weight:700;margin-bottom:8px}.metric-value{color:#0F172A;font-size:clamp(1.05rem,1.55vw,1.8rem);line-height:1.15;font-weight:800;letter-spacing:-.035em;white-space:normal;overflow:visible}.metric-subtext{color:#64748B;font-size:.78rem;margin-top:7px}
+.total-card{padding:26px 28px;border:2px solid #F97316;background:#FFF7ED;text-align:center;margin-top:10px;margin-bottom:18px}.total-card .metric-label{color:#9A3412}.total-card .metric-value{color:#7C2D12;font-size:clamp(1.45rem,2.2vw,2.55rem)}
+.stButton>button,.stDownloadButton>button,.stFormSubmitButton>button{min-height:46px;border-radius:12px;font-weight:700}.stButton>button[kind="primary"],.stFormSubmitButton>button[kind="primary"]{background:#F97316;border-color:#F97316;color:#fff}.stButton>button[kind="primary"]:hover,.stFormSubmitButton>button[kind="primary"]:hover{background:#EA580C;border-color:#EA580C}.stDownloadButton>button{background:#0F172A;border-color:#0F172A;color:#fff}
+.footer{margin-top:55px;padding-top:22px;border-top:1px solid #E2E8F0;color:#94A3B8;font-size:.86rem}
+@media(max-width:800px){.hero{padding:48px 28px}.page-header{padding:28px 24px}.metric-value{font-size:1.15rem}}
 </style>
-    """,
+""",
     unsafe_allow_html=True,
 )
 
 
-# ============================================================
-# DEFAULT PROJECT ESTIMATE
-# ============================================================
-
-def create_default_estimate():
-
+def default_estimate():
     return pd.DataFrame(
         [
-
-            [
-                "Earthwork",
-                "Excavation",
-                800.0,
-                "CY",
-                12.50,
-            ],
-
-            [
-                "Concrete",
-                "Concrete",
-                120.0,
-                "CY",
-                165.00,
-            ],
-
-            [
-                "Paving",
-                "Asphalt",
-                500.0,
-                "TON",
-                95.00,
-            ],
-
-            [
-                "Utilities",
-                "Storm Pipe",
-                600.0,
-                "LF",
-                42.00,
-            ],
-
-            [
-                "Utilities",
-                "Sanitary Sewer Pipe",
-                350.0,
-                "LF",
-                55.00,
-            ],
-
-            [
-                "Site",
-                "Curb & Gutter",
-                900.0,
-                "LF",
-                24.00,
-            ],
-
+            ["Earthwork", "Excavation", 800.0, "CY", 12.50],
+            ["Concrete", "Concrete", 120.0, "CY", 165.00],
+            ["Paving", "Asphalt", 500.0, "TON", 95.00],
+            ["Utilities", "Storm Pipe", 600.0, "LF", 42.00],
+            ["Utilities", "Sanitary Sewer Pipe", 350.0, "LF", 55.00],
+            ["Site", "Curb & Gutter", 900.0, "LF", 24.00],
         ],
-
-        columns=
-            BASE_COLUMNS,
+        columns=BASE_COLUMNS,
     )
 
 
-# ============================================================
-# DEMO COST LIBRARY
-# ============================================================
-
-def create_cost_library():
-
+def cost_library():
     return pd.DataFrame(
         [
-
-            [
-                "Earthwork",
-                "Excavation",
-                "CY",
-                12.50,
-            ],
-
-            [
-                "Earthwork",
-                "Fine Grading",
-                "SY",
-                2.75,
-            ],
-
-            [
-                "Concrete",
-                "Concrete",
-                "CY",
-                165.00,
-            ],
-
-            [
-                "Paving",
-                "Asphalt",
-                "TON",
-                95.00,
-            ],
-
-            [
-                "Utilities",
-                "Storm Pipe",
-                "LF",
-                42.00,
-            ],
-
-            [
-                "Utilities",
-                "Sanitary Sewer Pipe",
-                "LF",
-                55.00,
-            ],
-
-            [
-                "Utilities",
-                "Water Line",
-                "LF",
-                48.00,
-            ],
-
-            [
-                "Site",
-                "Curb & Gutter",
-                "LF",
-                24.00,
-            ],
-
-            [
-                "Site",
-                "Topsoil",
-                "CY",
-                32.00,
-            ],
-
-            [
-                "Erosion Control",
-                "Silt Fence",
-                "LF",
-                4.50,
-            ],
-
-            [
-                "Erosion Control",
-                "Construction Entrance",
-                "EA",
-                1450.00,
-            ],
-
-            [
-                "Landscaping",
-                "Seed & Mulch",
-                "AC",
-                2400.00,
-            ],
-
+            ["Earthwork", "Excavation", "CY", 12.50],
+            ["Earthwork", "Fine Grading", "SY", 2.75],
+            ["Concrete", "Concrete", "CY", 165.00],
+            ["Paving", "Asphalt", "TON", 95.00],
+            ["Utilities", "Storm Pipe", "LF", 42.00],
+            ["Utilities", "Sanitary Sewer Pipe", "LF", 55.00],
+            ["Utilities", "Water Line", "LF", 48.00],
+            ["Site", "Curb & Gutter", "LF", 24.00],
+            ["Site", "Topsoil", "CY", 32.00],
+            ["Erosion Control", "Silt Fence", "LF", 4.50],
+            ["Erosion Control", "Construction Entrance", "EA", 1450.00],
+            ["Landscaping", "Seed & Mulch", "AC", 2400.00],
         ],
-
-        columns=[
-            "Category",
-            "Item",
-            "Unit",
-            "Baseline Unit Cost ($)",
-        ],
+        columns=["Category", "Item", "Unit", "Baseline Unit Cost ($)"],
     )
 
 
-COST_LIBRARY = (
-    create_cost_library()
-)
+COST_LIBRARY = cost_library()
 
-
-# ============================================================
-# SESSION STATE
-# ============================================================
-
-STATE_DEFAULTS = {
-
-    "page":
-        "Home",
-
-    "project_name":
-        "Residential Site Development",
-
-    "client":
-        "Example Client",
-
-    "project_location":
-        "Blacksburg, VA",
-
-    "project_type":
-        "Land Development",
-
-    "project_notes":
-        "",
-
-    "contingency":
-        10.0,
-
-    "overhead":
-        5.0,
-
-    "profit":
-        8.0,
+DEFAULTS = {
+    "page": "Dashboard",
+    "project_name": "Residential Site Development",
+    "client": "Example Client",
+    "project_location": "Blacksburg, VA",
+    "project_type": "Land Development",
+    "project_notes": "",
+    "contingency": 10.0,
+    "overhead": 5.0,
+    "profit": 8.0,
+    "risk_default_uncertainty": 10.0,
+    "risk_simulations": 5000,
 }
 
-
-for key, value in STATE_DEFAULTS.items():
-
+for key, value in DEFAULTS.items():
     if key not in st.session_state:
-
         st.session_state[key] = value
 
+if "estimate_data" not in st.session_state:
+    st.session_state.estimate_data = default_estimate()
 
-if "estimate_base" not in st.session_state:
+if "scenario_b_data" not in st.session_state:
+    st.session_state.scenario_b_data = default_estimate()
 
-    st.session_state.estimate_base = (
-        create_default_estimate()
-    )
+if "risk_uncertainty" not in st.session_state:
+    st.session_state.risk_uncertainty = {}
 
-
-if "estimate_current" not in st.session_state:
-
-    st.session_state.estimate_current = (
-        create_default_estimate()
-    )
-
-
-# ============================================================
-# DATA FUNCTIONS
-# ============================================================
 
 def clean_estimate(data):
+    df = pd.DataFrame(data).copy()
 
-    df = pd.DataFrame(
-        data
-    ).copy()
+    for col in BASE_COLUMNS:
+        if col not in df.columns:
+            df[col] = 0.0 if col in ["Quantity", "Unit Cost ($)"] else ""
 
+    df = df[BASE_COLUMNS]
 
-    for column in BASE_COLUMNS:
+    for col in ["Category", "Item", "Unit"]:
+        df[col] = df[col].fillna("").astype(str)
 
-        if column not in df.columns:
-
-            if column in [
-                "Quantity",
-                "Unit Cost ($)",
-            ]:
-
-                df[column] = 0.0
-
-            else:
-
-                df[column] = ""
-
-
-    df = df[
-        BASE_COLUMNS
-    ]
-
-
-    for column in [
-        "Category",
-        "Item",
-        "Unit",
-    ]:
-
-        df[column] = (
-
-            df[column]
-
-            .fillna("")
-
-            .astype(str)
-        )
-
-
-    for column in [
-        "Quantity",
-        "Unit Cost ($)",
-    ]:
-
-        df[column] = (
-
-            pd.to_numeric(
-                df[column],
-                errors="coerce",
-            )
-
-            .fillna(
-                0.0
-            )
-        )
-
+    for col in ["Quantity", "Unit Cost ($)"]:
+        df[col] = pd.to_numeric(
+            df[col],
+            errors="coerce",
+        ).fillna(0.0)
 
     df["Total Cost"] = (
-
         df["Quantity"]
-
         *
-
         df["Unit Cost ($)"]
     )
-
 
     return df
 
 
-def base_only(df):
-
-    return (
-
-        clean_estimate(
-            df
-        )[BASE_COLUMNS]
-
-        .copy()
-    )
-
-
-def calculate_costs(df):
-
-    cleaned = clean_estimate(
-        df
-    )
-
+def calc(df):
+    df = clean_estimate(df)
 
     direct = float(
-
-        cleaned[
-            "Total Cost"
-        ].sum()
+        df["Total Cost"].sum()
     )
 
-
-    contingency_cost = (
-
+    contingency = (
         direct
-
         *
-
-        float(
-            st.session_state.contingency
-        )
-
+        float(st.session_state.contingency)
         /
-
-        100.0
+        100
     )
 
-
-    overhead_cost = (
-
+    overhead = (
         direct
-
         *
-
-        float(
-            st.session_state.overhead
-        )
-
+        float(st.session_state.overhead)
         /
-
-        100.0
+        100
     )
-
 
     subtotal = (
-
         direct
-
         +
-
-        contingency_cost
-
+        contingency
         +
-
-        overhead_cost
+        overhead
     )
 
-
-    profit_cost = (
-
+    profit = (
         subtotal
-
         *
-
-        float(
-            st.session_state.profit
-        )
-
+        float(st.session_state.profit)
         /
-
-        100.0
+        100
     )
-
-
-    total = (
-
-        subtotal
-
-        +
-
-        profit_cost
-    )
-
 
     return (
-
         direct,
-
-        contingency_cost,
-
-        overhead_cost,
-
-        profit_cost,
-
-        total,
+        contingency,
+        overhead,
+        profit,
+        subtotal + profit,
     )
 
 
-def active_estimate():
+def money(value):
+    value = float(value)
 
-    return clean_estimate(
+    if value < 0:
+        return f"-${abs(value):,.2f}"
 
-        st.session_state.estimate_current
-    )
+    return f"${value:,.2f}"
 
 
-# ============================================================
-# ESTIMATE STATE FUNCTIONS
-# ============================================================
-
-def commit_estimate():
-
-    st.session_state.estimate_base = (
-
-        base_only(
-            st.session_state.estimate_current
+def safe_key(value):
+    return (
+        re.sub(
+            r"[^A-Za-z0-9]+",
+            "_",
+            str(value),
         )
+        .strip("_")
+        .lower()
+        or "uncategorized"
     )
 
 
-    st.session_state.pop(
-        "estimate_editor",
-        None,
-    )
+def set_page(name):
+    st.session_state.page = name
 
 
-def commit_scenario_b():
-
-    if (
-        "scenario_b_current"
-        in
-        st.session_state
-    ):
-
-        st.session_state.scenario_b_base = (
-
-            base_only(
-                st.session_state.scenario_b_current
-            )
-        )
-
-
-    st.session_state.pop(
-        "scenario_b_editor",
-        None,
-    )
-
-
-# ============================================================
-# NAVIGATION
-# ============================================================
-
-def set_page(
-    page_name
-):
-
-    current_page = (
-
-        st.session_state.get(
-            "page",
-            "Home",
-        )
-    )
-
-
-    if (
-        current_page
-        ==
-        "Cost Estimator"
-    ):
-
-        commit_estimate()
-
-
-    elif (
-        current_page
-        ==
-        "Scenario Comparison"
-    ):
-
-        commit_scenario_b()
-
-
-    st.session_state.page = (
-        page_name
-    )
-
-
-# ============================================================
-# COST LIBRARY ACTIONS
-# ============================================================
-
-def add_library_item(
-    item_name
-):
-
-    commit_estimate()
-
-
+def add_library_item(item_name):
     row = (
-
         COST_LIBRARY.loc[
             COST_LIBRARY["Item"]
             ==
             item_name
         ]
-
         .iloc[0]
     )
-
 
     new_row = pd.DataFrame(
         [
             {
-
                 "Category":
-                    row[
-                        "Category"
-                    ],
+                    row["Category"],
 
                 "Item":
-                    row[
-                        "Item"
-                    ],
+                    row["Item"],
 
                 "Quantity":
                     1.0,
 
                 "Unit":
-                    row[
-                        "Unit"
-                    ],
+                    row["Unit"],
 
                 "Unit Cost ($)":
                     float(
@@ -1077,27 +251,21 @@ def add_library_item(
         ]
     )
 
+    current = (
+        clean_estimate(
+            st.session_state.estimate_data
+        )[BASE_COLUMNS]
+    )
 
-    st.session_state.estimate_base = (
-
+    st.session_state.estimate_data = (
         pd.concat(
             [
-                st.session_state.estimate_base,
+                current,
                 new_row,
             ],
-
             ignore_index=True,
         )
     )
-
-
-    st.session_state.estimate_current = (
-
-        clean_estimate(
-            st.session_state.estimate_base
-        )
-    )
-
 
     st.session_state.pop(
         "estimate_editor",
@@ -1106,16 +274,9 @@ def add_library_item(
 
 
 def reset_estimate():
-
-    st.session_state.estimate_base = (
-        create_default_estimate()
+    st.session_state.estimate_data = (
+        default_estimate()
     )
-
-
-    st.session_state.estimate_current = (
-        create_default_estimate()
-    )
-
 
     st.session_state.pop(
         "estimate_editor",
@@ -1123,32 +284,13 @@ def reset_estimate():
     )
 
 
-# ============================================================
-# SCENARIO ACTIONS
-# ============================================================
-
-def copy_current_to_scenario_b():
-
-    current = (
-        active_estimate()
-    )
-
-
-    st.session_state.scenario_b_base = (
-
-        base_only(
-            current
-        )
-    )
-
-
-    st.session_state.scenario_b_current = (
-
+def copy_current_to_b():
+    st.session_state.scenario_b_data = (
         clean_estimate(
-            current
-        )
+            st.session_state.estimate_data
+        )[BASE_COLUMNS]
+        .copy()
     )
-
 
     st.session_state.pop(
         "scenario_b_editor",
@@ -1156,51 +298,225 @@ def copy_current_to_scenario_b():
     )
 
 
-# ============================================================
-# UI HELPERS
-# ============================================================
+def ensure_risk_categories(df):
+    categories = (
+        clean_estimate(df)["Category"]
+        .replace(
+            "",
+            "Uncategorized",
+        )
+        .drop_duplicates()
+        .tolist()
+    )
 
-def show_page_header(
+    for category in categories:
+
+        if (
+            category
+            not in
+            st.session_state.risk_uncertainty
+        ):
+
+            st.session_state.risk_uncertainty[
+                category
+            ] = float(
+                st.session_state.risk_default_uncertainty
+            )
+
+    return categories
+
+
+def run_monte_carlo(
+    df,
+    uncertainty_map,
+    simulations,
+    seed=42,
+):
+    df = clean_estimate(df)
+
+    rng = np.random.default_rng(
+        seed
+    )
+
+    simulated_direct = np.zeros(
+        int(simulations),
+        dtype=float,
+    )
+
+    for _, row in df.iterrows():
+
+        base_cost = float(
+            row["Total Cost"]
+        )
+
+        if base_cost <= 0:
+            continue
+
+        category = (
+            row["Category"]
+            if row["Category"]
+            else "Uncategorized"
+        )
+
+        uncertainty = (
+            max(
+                0.0,
+                float(
+                    uncertainty_map.get(
+                        category,
+                        10.0,
+                    )
+                ),
+            )
+            /
+            100
+        )
+
+        if uncertainty == 0:
+
+            simulated_direct += (
+                base_cost
+            )
+
+        else:
+
+            simulated_direct += (
+                base_cost
+                *
+                rng.triangular(
+                    1 - uncertainty,
+                    1,
+                    1 + uncertainty,
+                    size=int(
+                        simulations
+                    ),
+                )
+            )
+
+    markup = (
+        (
+            1
+            +
+            st.session_state.contingency / 100
+            +
+            st.session_state.overhead / 100
+        )
+        *
+        (
+            1
+            +
+            st.session_state.profit / 100
+        )
+    )
+
+    return (
+        simulated_direct
+        *
+        markup
+    )
+
+
+def get_risk(df):
+    categories = (
+        ensure_risk_categories(
+            df
+        )
+    )
+
+    uncertainty_map = {
+        category:
+            float(
+                st.session_state.risk_uncertainty.get(
+                    category,
+                    10.0,
+                )
+            )
+        for category in categories
+    }
+
+    samples = run_monte_carlo(
+        df,
+        uncertainty_map,
+        int(
+            st.session_state.risk_simulations
+        ),
+    )
+
+    return {
+        "samples":
+            samples,
+
+        "p10":
+            float(
+                np.percentile(
+                    samples,
+                    10,
+                )
+            ),
+
+        "p50":
+            float(
+                np.percentile(
+                    samples,
+                    50,
+                )
+            ),
+
+        "p80":
+            float(
+                np.percentile(
+                    samples,
+                    80,
+                )
+            ),
+
+        "p90":
+            float(
+                np.percentile(
+                    samples,
+                    90,
+                )
+            ),
+
+        "mean":
+            float(
+                np.mean(
+                    samples
+                )
+            ),
+    }
+
+
+def header(
     title,
     description,
 ):
-
     st.markdown(
-
-        '<div class="page-header">'
-
-        f"<h1>{title}</h1>"
-
-        f"<p>{description}</p>"
-
-        "</div>",
-
+        f'<div class="page-header">'
+        f'<h1>{title}</h1>'
+        f'<p>{description}</p>'
+        f'</div>',
         unsafe_allow_html=True,
     )
 
 
-def show_section(
+def section(
     title,
     subtitle=None,
 ):
-
     html = (
-
         f'<div class="section-title">'
         f'{title}'
         f'</div>'
     )
 
-
     if subtitle:
 
         html += (
-
             f'<div class="section-subtitle">'
             f'{subtitle}'
             f'</div>'
         )
-
 
     st.markdown(
         html,
@@ -1208,54 +524,77 @@ def show_section(
     )
 
 
-def show_card(
+def feature(
     label,
     title,
     body,
 ):
-
     st.markdown(
-
-        '<div class="feature-card">'
-
-        f'<div class="label">'
-        f'{label}'
-        f'</div>'
-
-        f'<h3>'
-        f'{title}'
-        f'</h3>'
-
-        f'<p>'
-        f'{body}'
-        f'</p>'
-
-        '</div>',
-
+        f'<div class="feature-card">'
+        f'<div class="label">{label}</div>'
+        f'<h3>{title}</h3>'
+        f'<p>{body}</p>'
+        f'</div>',
         unsafe_allow_html=True,
     )
 
 
-def show_footer():
+def metric(
+    label,
+    value,
+    subtext="",
+):
+    sub = (
+        f'<div class="metric-subtext">'
+        f'{subtext}'
+        f'</div>'
+        if subtext
+        else ""
+    )
 
     st.markdown(
+        f'<div class="metric-card">'
+        f'<div class="metric-label">{label}</div>'
+        f'<div class="metric-value">{value}</div>'
+        f'{sub}'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
+
+def total_metric(
+    label,
+    value,
+    subtext="",
+):
+    sub = (
+        f'<div class="metric-subtext">'
+        f'{subtext}'
+        f'</div>'
+        if subtext
+        else ""
+    )
+
+    st.markdown(
+        f'<div class="total-card">'
+        f'<div class="metric-label">{label}</div>'
+        f'<div class="metric-value">{value}</div>'
+        f'{sub}'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def footer():
+    st.markdown(
         '<div class="footer">'
-
-        '<strong>'
-        'BuildCost'
-        '</strong>'
-
-        ' • Construction Cost Intelligence'
-
+        '<strong>BuildCost</strong> '
+        '• Construction Cost Intelligence'
         '<br>'
-
-        'BuildCost is an early-stage planning tool. '
-        'Verify quantities, unit costs, scope, location, '
-        'and date before using an estimate for project decisions.'
-
+        'Early-stage planning tool — verify project '
+        'quantities, pricing, scope, location, and date '
+        'before making project decisions.'
         '</div>',
-
         unsafe_allow_html=True,
     )
 
@@ -1267,312 +606,157 @@ def show_footer():
 with st.sidebar:
 
     st.markdown(
-
         '<div style="'
         'font-size:1.75rem;'
         'font-weight:900;'
         'margin-top:6px;'
         'color:white;'
         '">'
-
         '🏗️ BUILDCOST'
-
         '</div>',
-
         unsafe_allow_html=True,
     )
-
 
     st.caption(
         "CONSTRUCTION COST INTELLIGENCE"
     )
 
-
     st.divider()
 
-
-    for page_name in PAGES:
-
-        if (
-            st.session_state.page
-            ==
-            page_name
-        ):
-
-            button_type = (
-                "primary"
-            )
-
-        else:
-
-            button_type = (
-                "secondary"
-            )
-
+    for name in PAGES:
 
         st.button(
-
-            page_name,
-
-            key=
-                f"nav_{page_name}",
-
-            type=
-                button_type,
-
-            use_container_width=
-                True,
-
-            on_click=
-                set_page,
-
-            args=
-                (page_name,),
+            name,
+            key=f"nav_{name}",
+            type=(
+                "primary"
+                if st.session_state.page
+                ==
+                name
+                else "secondary"
+            ),
+            use_container_width=True,
+            on_click=set_page,
+            args=(name,),
         )
 
-
     st.divider()
-
 
     st.caption(
         "CURRENT PROJECT"
     )
 
-
     st.write(
         f"**{st.session_state.project_name}**"
     )
-
 
     st.caption(
         st.session_state.project_location
     )
 
-
     st.divider()
 
-
     st.caption(
-        "BuildCost v7.0"
+        "BuildCost v8.0"
     )
 
 
-# ============================================================
-# CURRENT PROJECT VALUES
-# ============================================================
+page = st.session_state.page
 
-page = (
-    st.session_state.page
+current_df = clean_estimate(
+    st.session_state.estimate_data
 )
-
-
-current_df = (
-    active_estimate()
-)
-
 
 (
-    direct_cost,
-    contingency_cost,
-    overhead_cost,
-    profit_cost,
+    direct,
+    contingency,
+    overhead,
+    profit,
     grand_total,
-) = calculate_costs(
+) = calc(
+    current_df
+)
+
+risk_now = get_risk(
     current_df
 )
 
 
 # ============================================================
-# HOME
+# DASHBOARD
 # ============================================================
 
-if page == "Home":
+if page == "Dashboard":
 
     st.markdown(
-
         '<div class="hero">'
-
         '<div class="hero-badge">'
         'CONSTRUCTION COST INTELLIGENCE'
         '</div>'
-
         '<h1>'
-
-        'Plan smarter.'
-
+        'Understand what your project costs.'
         '<br>'
-
         '<span style="color:#FB923C;">'
-
-        'Understand the cost before you build.'
-
+        'And what could change it.'
         '</span>'
-
         '</h1>'
-
         '<p>'
-
-        'BuildCost is an early-stage construction estimating '
-        'and cost-comparison platform. Contractors, engineers, '
-        'developers, and project teams can build estimates, '
-        'use a starter cost library, analyze cost drivers, '
-        'and compare project alternatives in one workspace.'
-
+        'BuildCost helps project teams create '
+        'early-stage construction estimates, '
+        'quantify cost uncertainty, compare '
+        'alternatives, and identify the categories '
+        'driving project cost before construction begins.'
         '</p>'
-
         '</div>',
-
         unsafe_allow_html=True,
     )
-
 
     b1, b2, b3, spacer = (
         st.columns(
             [
-                1.2,
-                1.2,
-                1.2,
+                1.15,
+                1.15,
+                1.15,
                 3,
             ]
         )
     )
 
-
     with b1:
 
         st.button(
-
-            "Create an Estimate →",
-
-            type=
-                "primary",
-
-            use_container_width=
-                True,
-
-            on_click=
-                set_page,
-
-            args=
-                ("Cost Estimator",),
-
-            key=
-                "home_estimator",
+            "Build Estimate →",
+            type="primary",
+            use_container_width=True,
+            on_click=set_page,
+            args=("Estimate",),
+            key="dash_est",
         )
-
 
     with b2:
 
         st.button(
-
-            "Compare Scenarios",
-
-            use_container_width=
-                True,
-
-            on_click=
-                set_page,
-
-            args=
-                ("Scenario Comparison",),
-
-            key=
-                "home_scenarios",
+            "Analyze Risk",
+            use_container_width=True,
+            on_click=set_page,
+            args=("Risk Analysis",),
+            key="dash_risk",
         )
-
 
     with b3:
 
         st.button(
-
-            "Explore Cost Library",
-
-            use_container_width=
-                True,
-
-            on_click=
-                set_page,
-
-            args=
-                ("Cost Library",),
-
-            key=
-                "home_library",
+            "Compare Scenarios",
+            use_container_width=True,
+            on_click=set_page,
+            args=("Compare Scenarios",),
+            key="dash_compare",
         )
 
-
-    show_section(
-
-        "One workflow. Better cost visibility.",
-
-        "Build the estimate, understand what drives it, "
-        "and compare alternatives before construction begins.",
+    section(
+        "Project snapshot",
+        "The key numbers judges should understand immediately.",
     )
-
-
-    c1, c2, c3, c4 = (
-        st.columns(
-            4
-        )
-    )
-
-
-    with c1:
-
-        show_card(
-
-            "01 — ESTIMATE",
-
-            "Build project costs",
-
-            "Enter quantities and unit prices "
-            "or start from the demo construction cost library.",
-        )
-
-
-    with c2:
-
-        show_card(
-
-            "02 — COMPARE",
-
-            "Test alternatives",
-
-            "Create a second scenario and see how design "
-            "or pricing changes affect the overall project.",
-        )
-
-
-    with c3:
-
-        show_card(
-
-            "03 — ANALYZE",
-
-            "Find cost drivers",
-
-            "See which categories contribute the most "
-            "to direct cost using interactive analytics.",
-        )
-
-
-    with c4:
-
-        show_card(
-
-            "04 — EXPORT",
-
-            "Take the data with you",
-
-            "Download the estimate as a CSV "
-            "for documentation or additional analysis.",
-        )
-
-
-    show_section(
-        "Current project snapshot"
-    )
-
 
     m1, m2, m3, m4 = (
         st.columns(
@@ -1580,617 +764,1035 @@ if page == "Home":
         )
     )
 
-
-    m1.metric(
-
-        "Estimated Total",
-
-        f"${grand_total:,.0f}",
-    )
-
-
-    m2.metric(
-
-        "Direct Cost",
-
-        f"${direct_cost:,.0f}",
-    )
-
-
-    m3.metric(
-
-        "Estimate Items",
-
-        len(
-            current_df
-        ),
-    )
-
-
-    category_count = (
-
-        current_df[
-            "Category"
-        ]
-
-        .replace(
-            "",
-            pd.NA,
+    with m1:
+        metric(
+            "Base Estimate",
+            money(
+                grand_total
+            ),
         )
 
-        .dropna()
+    with m2:
+        metric(
+            "P80 Risk Estimate",
+            money(
+                risk_now["p80"]
+            ),
+            "80% of simulated outcomes "
+            "are at or below this value",
+        )
 
-        .nunique()
+    with m3:
+        metric(
+            "Direct Cost",
+            money(
+                direct
+            ),
+        )
+
+    with m4:
+        metric(
+            "Estimate Items",
+            str(
+                len(
+                    current_df
+                )
+            ),
+        )
+
+    category_df = (
+        current_df
+        .assign(
+            Category=
+                current_df["Category"]
+                .replace(
+                    "",
+                    "Uncategorized",
+                )
+        )
+        .groupby(
+            "Category",
+            as_index=False,
+        )["Total Cost"]
+        .sum()
+        .sort_values(
+            "Total Cost",
+            ascending=False,
+        )
     )
 
-
-    m4.metric(
-
-        "Categories",
-
-        category_count,
+    section(
+        "Cost drivers",
+        "Where the current direct construction cost "
+        "is concentrated.",
     )
 
+    if (
+        direct > 0
+        and
+        not category_df.empty
+    ):
 
-    show_footer()
+        fig = px.bar(
+            category_df,
+            x="Total Cost",
+            y="Category",
+            orientation="h",
+            text_auto=".2s",
+        )
+
+        fig.update_yaxes(
+            categoryorder=
+                "total ascending"
+        )
+
+        fig.update_layout(
+            height=430,
+            xaxis_title=
+                "Direct Cost ($)",
+            yaxis_title="",
+            margin=dict(
+                l=10,
+                r=20,
+                t=15,
+                b=10,
+            ),
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+        )
+
+    section(
+        "BuildCost workflow"
+    )
+
+    c1, c2, c3, c4 = (
+        st.columns(
+            4
+        )
+    )
+
+    with c1:
+
+        feature(
+            "01 — ESTIMATE",
+            "Build the baseline",
+            "Enter quantities and unit prices "
+            "or start from the built-in demo cost library.",
+        )
+
+    with c2:
+
+        feature(
+            "02 — QUANTIFY RISK",
+            "Model uncertainty",
+            "Run thousands of Monte Carlo simulations "
+            "to understand likely project cost ranges.",
+        )
+
+    with c3:
+
+        feature(
+            "03 — COMPARE",
+            "Test alternatives",
+            "Compare Scenario A and B and see which "
+            "categories created the difference.",
+        )
+
+    with c4:
+
+        feature(
+            "04 — DECIDE",
+            "Focus on cost drivers",
+            "Use analytics to understand which parts "
+            "of the project deserve the most attention.",
+        )
+
+    footer()
 
 
 # ============================================================
-# COST ESTIMATOR
+# ESTIMATE
 # ============================================================
 
-elif page == "Cost Estimator":
+elif page == "Estimate":
 
-    show_page_header(
-
-        "Cost Estimator",
-
-        "Build an estimate using project quantities and unit prices. "
-        "The editor now keeps its source data stable, so a cell edit "
-        "is processed the first time instead of resetting and making "
-        "you type it again.",
+    header(
+        "Estimate",
+        "Build the project baseline. The editor is inside "
+        "a form, so typing in a cell no longer causes a "
+        "rerun or makes you enter the value twice.",
     )
 
-
-    show_section(
-
+    section(
         "Quick add from the cost library",
-
-        "Baseline prices are illustrative demo values. "
-        "Adjust them for the real project and location.",
+        "Illustrative demo prices only — replace them "
+        "with project-specific local pricing.",
     )
 
-
-    library_left, library_right = (
-
+    q1, q2 = (
         st.columns(
             [
-                2.5,
+                2.6,
                 1,
             ]
         )
     )
 
-
-    with library_left:
+    with q1:
 
         library_choice = (
-
             st.selectbox(
-
                 "Construction item",
-
                 COST_LIBRARY[
                     "Item"
                 ].tolist(),
-
                 key=
-                    "estimator_library_choice",
+                    "lib_choice",
             )
         )
 
-
-    with library_right:
-
-        st.write("")
+    with q2:
 
         st.write("")
-
+        st.write("")
 
         st.button(
-
-            "Add selected item",
-
-            type=
-                "primary",
-
-            use_container_width=
-                True,
-
+            "Add Selected Item",
+            type="primary",
+            use_container_width=True,
             on_click=
                 add_library_item,
-
-            args=
-                (library_choice,),
-
-            key=
-                "estimator_add_library",
+            args=(
+                library_choice,
+            ),
+            key="add_lib",
         )
 
-
-    show_section(
-
-        "Project markups",
-
-        "Adjust contingency, overhead, "
-        "and profit percentages.",
+    st.markdown(
+        '<div class="callout">'
+        '<strong>Tip:</strong> Make your edits, then press '
+        '<strong>Update Estimate</strong>. The page will not '
+        'restart after every cell entry.'
+        '</div>',
+        unsafe_allow_html=True,
     )
 
-
-    markup1, markup2, markup3 = (
-
-        st.columns(
-            3
-        )
+    section(
+        "Project + estimate inputs"
     )
 
+    with st.form(
+        "estimate_form",
+        clear_on_submit=False,
+    ):
 
-    with markup1:
-
-        st.number_input(
-
-            "Contingency (%)",
-
-            min_value=
-                0.0,
-
-            max_value=
-                100.0,
-
-            step=
-                0.5,
-
-            key=
-                "contingency",
+        p1, p2 = (
+            st.columns(
+                2
+            )
         )
 
+        with p1:
 
-    with markup2:
+            project_name_input = (
+                st.text_input(
+                    "Project name",
+                    value=
+                        st.session_state.project_name,
+                )
+            )
 
-        st.number_input(
+            client_input = (
+                st.text_input(
+                    "Client",
+                    value=
+                        st.session_state.client,
+                )
+            )
 
-            "Overhead (%)",
+        with p2:
 
-            min_value=
-                0.0,
+            project_location_input = (
+                st.text_input(
+                    "Project location",
+                    value=
+                        st.session_state.project_location,
+                )
+            )
 
-            max_value=
-                100.0,
+            project_type_input = (
+                st.selectbox(
+                    "Project type",
+                    PROJECT_TYPES,
+                    index=(
+                        PROJECT_TYPES.index(
+                            st.session_state.project_type
+                        )
+                        if
+                        st.session_state.project_type
+                        in
+                        PROJECT_TYPES
+                        else 0
+                    ),
+                )
+            )
 
-            step=
-                0.5,
-
-            key=
-                "overhead",
+        project_notes_input = (
+            st.text_area(
+                "Project notes",
+                value=
+                    st.session_state.project_notes,
+                height=110,
+                placeholder=
+                    "Scope, assumptions, estimate notes, "
+                    "or design alternatives...",
+            )
         )
 
-
-    with markup3:
-
-        st.number_input(
-
-            "Profit (%)",
-
-            min_value=
-                0.0,
-
-            max_value=
-                100.0,
-
-            step=
-                0.5,
-
-            key=
-                "profit",
+        u1, u2, u3 = (
+            st.columns(
+                3
+            )
         )
 
+        with u1:
 
-    show_section(
-
-        "Estimate items",
-
-        "Edit any cell directly. "
-        "The first edit is retained and used immediately.",
-    )
-
-
-    edited_df = (
-        st.data_editor(
-
-            st.session_state.estimate_base,
-
-            num_rows=
-                "dynamic",
-
-            hide_index=
-                True,
-
-            use_container_width=
-                True,
-
-            key=
-                "estimate_editor",
-
-            column_config={
-
-                "Category":
-                    st.column_config.TextColumn(
-                        "Category"
+            contingency_input = (
+                st.number_input(
+                    "Contingency (%)",
+                    0.0,
+                    100.0,
+                    float(
+                        st.session_state.contingency
                     ),
+                    0.5,
+                )
+            )
 
-                "Item":
-                    st.column_config.TextColumn(
-                        "Item"
+        with u2:
+
+            overhead_input = (
+                st.number_input(
+                    "Overhead (%)",
+                    0.0,
+                    100.0,
+                    float(
+                        st.session_state.overhead
                     ),
+                    0.5,
+                )
+            )
 
-                "Quantity":
-                    st.column_config.NumberColumn(
+        with u3:
 
-                        "Quantity",
-
-                        min_value=
-                            0.0,
-
-                        format=
-                            "%.2f",
+            profit_input = (
+                st.number_input(
+                    "Profit (%)",
+                    0.0,
+                    100.0,
+                    float(
+                        st.session_state.profit
                     ),
+                    0.5,
+                )
+            )
 
-                "Unit":
-                    st.column_config.TextColumn(
-                        "Unit"
-                    ),
-
-                "Unit Cost ($)":
-                    st.column_config.NumberColumn(
-
-                        "Unit Cost ($)",
-
-                        min_value=
-                            0.0,
-
-                        format=
-                            "$%.2f",
-                    ),
-            },
+        st.markdown(
+            "#### Estimate Items"
         )
-    )
 
+        edited_df = (
+            st.data_editor(
+                st.session_state.estimate_data,
+                num_rows="dynamic",
+                hide_index=True,
+                use_container_width=True,
+                key="estimate_editor",
+                column_config={
+                    "Category":
+                        st.column_config.TextColumn(
+                            "Category"
+                        ),
+
+                    "Item":
+                        st.column_config.TextColumn(
+                            "Item"
+                        ),
+
+                    "Quantity":
+                        st.column_config.NumberColumn(
+                            "Quantity",
+                            min_value=0.0,
+                            format="%.2f",
+                        ),
+
+                    "Unit":
+                        st.column_config.TextColumn(
+                            "Unit"
+                        ),
+
+                    "Unit Cost ($)":
+                        st.column_config.NumberColumn(
+                            "Unit Cost ($)",
+                            min_value=0.0,
+                            format="$%.2f",
+                        ),
+                },
+            )
+        )
+
+        submitted = (
+            st.form_submit_button(
+                "Update Estimate",
+                type="primary",
+                use_container_width=True,
+            )
+        )
+
+    if submitted:
+
+        st.session_state.project_name = (
+            project_name_input
+        )
+
+        st.session_state.client = (
+            client_input
+        )
+
+        st.session_state.project_location = (
+            project_location_input
+        )
+
+        st.session_state.project_type = (
+            project_type_input
+        )
+
+        st.session_state.project_notes = (
+            project_notes_input
+        )
+
+        st.session_state.contingency = (
+            float(
+                contingency_input
+            )
+        )
+
+        st.session_state.overhead = (
+            float(
+                overhead_input
+            )
+        )
+
+        st.session_state.profit = (
+            float(
+                profit_input
+            )
+        )
+
+        st.session_state.estimate_data = (
+            clean_estimate(
+                edited_df
+            )[BASE_COLUMNS]
+            .copy()
+        )
+
+        st.success(
+            "Estimate updated."
+        )
 
     estimate_df = (
         clean_estimate(
-            edited_df
+            st.session_state.estimate_data
         )
     )
 
-
-    # IMPORTANT:
-    # Keep a snapshot for all other pages.
-    #
-    # DO NOT overwrite estimate_base here.
-    #
-    # estimate_base stays stable while the user edits.
-    # That is what prevents the previous "type it twice"
-    # and first-entry-reset problem.
-
-    st.session_state.estimate_current = (
-        estimate_df.copy()
-    )
-
-
     (
-        direct_cost,
-        contingency_cost,
-        overhead_cost,
-        profit_cost,
+        direct,
+        contingency,
+        overhead,
+        profit,
         grand_total,
-    ) = calculate_costs(
+    ) = calc(
         estimate_df
     )
 
-
-    show_section(
+    section(
         "Estimate summary"
     )
 
-
-    m1, m2, m3, m4, m5 = (
-
+    s1, s2, s3, s4 = (
         st.columns(
-            5
+            4
         )
     )
 
+    with s1:
+        metric(
+            "Direct Cost",
+            money(
+                direct
+            ),
+        )
 
-    m1.metric(
+    with s2:
+        metric(
+            "Contingency",
+            money(
+                contingency
+            ),
+        )
 
-        "Direct Cost",
+    with s3:
+        metric(
+            "Overhead",
+            money(
+                overhead
+            ),
+        )
 
-        f"${direct_cost:,.2f}",
-    )
+    with s4:
+        metric(
+            "Profit",
+            money(
+                profit
+            ),
+        )
 
-
-    m2.metric(
-
-        "Contingency",
-
-        f"${contingency_cost:,.2f}",
-    )
-
-
-    m3.metric(
-
-        "Overhead",
-
-        f"${overhead_cost:,.2f}",
-    )
-
-
-    m4.metric(
-
-        "Profit",
-
-        f"${profit_cost:,.2f}",
-    )
-
-
-    m5.metric(
-
-        "Project Total",
-
-        f"${grand_total:,.2f}",
-    )
-
-
-    controls1, controls2, spacer = (
-
+    left_total, middle_total, right_total = (
         st.columns(
             [
-                1.4,
-                1.1,
+                1,
+                2,
+                1,
+            ]
+        )
+    )
+
+    with middle_total:
+
+        total_metric(
+            "Estimated Project Total",
+            money(
+                grand_total
+            ),
+            "Includes contingency, "
+            "overhead, and profit",
+        )
+
+    e1, e2, spacer = (
+        st.columns(
+            [
+                1.5,
+                1.0,
                 4,
             ]
         )
     )
 
+    with e1:
 
-    with controls1:
-
-        csv_data = (
-
+        st.download_button(
+            "⬇ Download Estimate CSV",
             estimate_df
-
             .to_csv(
                 index=False
             )
-
             .encode(
                 "utf-8"
-            )
+            ),
+            "BuildCost_Estimate.csv",
+            "text/csv",
+            use_container_width=True,
         )
 
-
-        st.download_button(
-
-            "⬇ Download Estimate CSV",
-
-            data=
-                csv_data,
-
-            file_name=
-                "BuildCost_Estimate.csv",
-
-            mime=
-                "text/csv",
-
-            use_container_width=
-                True,
-        )
-
-
-    with controls2:
+    with e2:
 
         st.button(
-
             "Reset Estimate",
-
-            use_container_width=
-                True,
-
+            use_container_width=True,
             on_click=
                 reset_estimate,
-
             key=
-                "reset_estimate_button",
+                "reset_est",
         )
 
-
-    show_footer()
+    footer()
 
 
 # ============================================================
-# SCENARIO COMPARISON
+# RISK ANALYSIS
 # ============================================================
 
-elif page == "Scenario Comparison":
+elif page == "Risk Analysis":
 
-    show_page_header(
-
-        "Scenario Comparison",
-
-        "Compare your current estimate with an alternative "
-        "design, material choice, quantity plan, or pricing scenario.",
+    header(
+        "Cost Risk & Uncertainty",
+        "Move beyond a single-point estimate. BuildCost runs "
+        "Monte Carlo simulations to show a range of possible "
+        "project costs based on uncertainty in each category.",
     )
 
-
-    scenario_a = (
-        active_estimate()
+    risk_df = clean_estimate(
+        st.session_state.estimate_data
     )
 
+    categories = (
+        ensure_risk_categories(
+            risk_df
+        )
+    )
 
-    if (
-        "scenario_b_base"
-        not in
-        st.session_state
+    st.markdown(
+        '<div class="callout">'
+        '<strong>How it works:</strong> Each line item is '
+        'simulated with a triangular distribution centered '
+        'on its current cost. The uncertainty percentage '
+        'controls how far that cost can move above or below '
+        'the estimate.'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    section(
+        "Risk assumptions",
+        "Set uncertainty by category, then run the simulation.",
+    )
+
+    with st.form(
+        "risk_form",
+        clear_on_submit=False,
     ):
 
-        st.session_state.scenario_b_base = (
-
-            base_only(
-                scenario_a
+        rtop1, rtop2 = (
+            st.columns(
+                2
             )
         )
 
+        with rtop1:
 
-    if (
-        "scenario_b_current"
-        not in
-        st.session_state
-    ):
+            default_uncertainty = (
+                st.number_input(
+                    "Default uncertainty for new categories (%)",
+                    0.0,
+                    100.0,
+                    float(
+                        st.session_state.risk_default_uncertainty
+                    ),
+                    1.0,
+                )
+            )
 
-        st.session_state.scenario_b_current = (
+        with rtop2:
 
-            clean_estimate(
-                st.session_state.scenario_b_base
+            sim_options = [
+                1000,
+                2500,
+                5000,
+                10000,
+            ]
+
+            sim_index = (
+                sim_options.index(
+                    int(
+                        st.session_state.risk_simulations
+                    )
+                )
+                if
+                int(
+                    st.session_state.risk_simulations
+                )
+                in
+                sim_options
+                else 2
+            )
+
+            simulations = (
+                st.selectbox(
+                    "Number of simulations",
+                    sim_options,
+                    index=sim_index,
+                )
+            )
+
+        inputs = {}
+
+        cols = (
+            st.columns(
+                3
             )
         )
 
+        for index, category in enumerate(
+            categories
+        ):
 
-    top1, top2, spacer = (
+            with cols[
+                index % 3
+            ]:
 
+                inputs[
+                    category
+                ] = (
+                    st.number_input(
+                        f"{category} uncertainty (%)",
+                        0.0,
+                        100.0,
+                        float(
+                            st.session_state.risk_uncertainty.get(
+                                category,
+                                st.session_state.risk_default_uncertainty,
+                            )
+                        ),
+                        1.0,
+                        key=
+                            f"risk_{safe_key(category)}",
+                    )
+                )
+
+        risk_submit = (
+            st.form_submit_button(
+                "Run Risk Simulation",
+                type="primary",
+                use_container_width=True,
+            )
+        )
+
+    if risk_submit:
+
+        st.session_state.risk_default_uncertainty = (
+            float(
+                default_uncertainty
+            )
+        )
+
+        st.session_state.risk_simulations = (
+            int(
+                simulations
+            )
+        )
+
+        st.session_state.risk_uncertainty = {
+            key:
+                float(
+                    value
+                )
+            for key, value
+            in inputs.items()
+        }
+
+        st.success(
+            f"Completed "
+            f"{st.session_state.risk_simulations:,} "
+            f"simulations."
+        )
+
+    results = get_risk(
+        risk_df
+    )
+
+    (
+        base_direct,
+        base_contingency,
+        base_overhead,
+        base_profit,
+        base_total,
+    ) = calc(
+        risk_df
+    )
+
+    section(
+        "Risk results"
+    )
+
+    r1, r2, r3, r4 = (
+        st.columns(
+            4
+        )
+    )
+
+    with r1:
+
+        metric(
+            "Base Estimate",
+            money(
+                base_total
+            ),
+        )
+
+    with r2:
+
+        metric(
+            "P50 Estimate",
+            money(
+                results["p50"]
+            ),
+            "Median outcome",
+        )
+
+    with r3:
+
+        metric(
+            "P80 Estimate",
+            money(
+                results["p80"]
+            ),
+            "80% of simulated outcomes "
+            "are at or below this value",
+        )
+
+    with r4:
+
+        metric(
+            "P90 Estimate",
+            money(
+                results["p90"]
+            ),
+        )
+
+    risk_left, risk_middle, risk_right = (
         st.columns(
             [
-                1.6,
-                2.1,
+                1,
+                2,
+                1,
+            ]
+        )
+    )
+
+    with risk_middle:
+
+        total_metric(
+            "Likely Cost Range (P10–P90)",
+            f'{money(results["p10"])} – '
+            f'{money(results["p90"])}',
+            f'{st.session_state.risk_simulations:,} '
+            f'simulations',
+        )
+
+    histogram_df = (
+        pd.DataFrame(
+            {
+                "Simulated Project Cost":
+                    results["samples"]
+            }
+        )
+    )
+
+    fig = px.histogram(
+        histogram_df,
+        x=
+            "Simulated Project Cost",
+        nbins=45,
+    )
+
+    fig.update_layout(
+        height=440,
+        xaxis_title=
+            "Simulated Project Cost ($)",
+        yaxis_title=
+            "Simulation Count",
+        margin=dict(
+            l=10,
+            r=10,
+            t=20,
+            b=10,
+        ),
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+    )
+
+    section(
+        "Current uncertainty assumptions"
+    )
+
+    category_costs = (
+        risk_df
+        .assign(
+            Category=
+                risk_df["Category"]
+                .replace(
+                    "",
+                    "Uncategorized",
+                )
+        )
+        .groupby(
+            "Category",
+            as_index=False,
+        )["Total Cost"]
+        .sum()
+    )
+
+    category_costs[
+        "Uncertainty (%)"
+    ] = (
+        category_costs[
+            "Category"
+        ]
+        .map(
+            lambda category:
+                float(
+                    st.session_state.risk_uncertainty.get(
+                        category,
+                        st.session_state.risk_default_uncertainty,
+                    )
+                )
+        )
+    )
+
+    st.dataframe(
+        category_costs,
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Total Cost":
+                st.column_config.NumberColumn(
+                    format="$%.2f"
+                ),
+
+            "Uncertainty (%)":
+                st.column_config.NumberColumn(
+                    format="%.1f%%"
+                ),
+        },
+    )
+
+    footer()
+
+
+# ============================================================
+# COMPARE SCENARIOS
+# ============================================================
+
+elif page == "Compare Scenarios":
+
+    header(
+        "Compare Scenarios",
+        "Compare the current estimate (Scenario A) with "
+        "an alternative Scenario B, then identify exactly "
+        "which categories are driving the difference.",
+    )
+
+    scenario_a = (
+        clean_estimate(
+            st.session_state.estimate_data
+        )
+    )
+
+    top1, top2, spacer = (
+        st.columns(
+            [
+                1.8,
+                2.5,
                 3,
             ]
         )
     )
 
-
     with top1:
 
         st.button(
-
             "Copy Current Estimate to B",
-
-            type=
-                "primary",
-
-            use_container_width=
-                True,
-
+            type="primary",
+            use_container_width=True,
             on_click=
-                copy_current_to_scenario_b,
-
+                copy_current_to_b,
             key=
-                "copy_to_scenario_b",
+                "copy_b",
         )
-
 
     with top2:
 
         st.caption(
-
-            "Scenario A is your current estimate. "
-            "Edit Scenario B without changing the main estimate."
+            "Scenario A stays unchanged. "
+            "Edit Scenario B and press "
+            "Update Scenario B."
         )
 
-
-    show_section(
-
+    section(
         "Scenario B",
-
-        "Change quantities or unit costs "
-        "to test an alternative.",
+        "Try a different material, quantity, "
+        "unit price, or design alternative.",
     )
 
+    with st.form(
+        "scenario_form",
+        clear_on_submit=False,
+    ):
 
-    scenario_b_edited = (
+        scenario_edit = (
+            st.data_editor(
+                st.session_state.scenario_b_data,
+                num_rows="dynamic",
+                hide_index=True,
+                use_container_width=True,
+                key=
+                    "scenario_b_editor",
+                column_config={
+                    "Category":
+                        st.column_config.TextColumn(
+                            "Category"
+                        ),
 
-        st.data_editor(
+                    "Item":
+                        st.column_config.TextColumn(
+                            "Item"
+                        ),
 
-            st.session_state.scenario_b_base,
+                    "Quantity":
+                        st.column_config.NumberColumn(
+                            "Quantity",
+                            min_value=0.0,
+                            format="%.2f",
+                        ),
 
-            num_rows=
-                "dynamic",
+                    "Unit":
+                        st.column_config.TextColumn(
+                            "Unit"
+                        ),
 
-            hide_index=
-                True,
-
-            use_container_width=
-                True,
-
-            key=
-                "scenario_b_editor",
-
-            column_config={
-
-                "Category":
-                    st.column_config.TextColumn(
-                        "Category"
-                    ),
-
-                "Item":
-                    st.column_config.TextColumn(
-                        "Item"
-                    ),
-
-                "Quantity":
-                    st.column_config.NumberColumn(
-
-                        "Quantity",
-
-                        min_value=
-                            0.0,
-
-                        format=
-                            "%.2f",
-                    ),
-
-                "Unit":
-                    st.column_config.TextColumn(
-                        "Unit"
-                    ),
-
-                "Unit Cost ($)":
-                    st.column_config.NumberColumn(
-
-                        "Unit Cost ($)",
-
-                        min_value=
-                            0.0,
-
-                        format=
-                            "$%.2f",
-                    ),
-            },
+                    "Unit Cost ($)":
+                        st.column_config.NumberColumn(
+                            "Unit Cost ($)",
+                            min_value=0.0,
+                            format="$%.2f",
+                        ),
+                },
+            )
         )
-    )
 
+        scenario_submit = (
+            st.form_submit_button(
+                "Update Scenario B",
+                type="primary",
+                use_container_width=True,
+            )
+        )
+
+    if scenario_submit:
+
+        st.session_state.scenario_b_data = (
+            clean_estimate(
+                scenario_edit
+            )[BASE_COLUMNS]
+            .copy()
+        )
+
+        st.success(
+            "Scenario B updated."
+        )
 
     scenario_b = (
-
         clean_estimate(
-            scenario_b_edited
+            st.session_state.scenario_b_data
         )
     )
-
-
-    st.session_state.scenario_b_current = (
-
-        scenario_b.copy()
-    )
-
 
     (
         a_direct,
@@ -2198,10 +1800,9 @@ elif page == "Scenario Comparison":
         a_overhead,
         a_profit,
         a_total,
-    ) = calculate_costs(
+    ) = calc(
         scenario_a
     )
-
 
     (
         b_direct,
@@ -2209,139 +1810,43 @@ elif page == "Scenario Comparison":
         b_overhead,
         b_profit,
         b_total,
-    ) = calculate_costs(
+    ) = calc(
         scenario_b
     )
 
-
     difference = (
-
         b_total
-
         -
-
         a_total
     )
 
-
-    if (
-        a_total
-        !=
-        0
-    ):
-
-        percentage_difference = (
-
+    percentage_difference = (
+        (
             difference
-
             /
-
             a_total
-
             *
-
-            100.0
+            100
         )
-
-    else:
-
-        percentage_difference = (
-            0.0
-        )
-
-
-    show_section(
-        "Comparison summary"
+        if a_total
+        else 0.0
     )
-
-
-    s1, s2, s3, s4 = (
-
-        st.columns(
-            4
-        )
-    )
-
-
-    s1.metric(
-
-        "Scenario A",
-
-        f"${a_total:,.2f}",
-    )
-
-
-    s2.metric(
-
-        "Scenario B",
-
-        f"${b_total:,.2f}",
-    )
-
-
-    s3.metric(
-
-        "B − A Difference",
-
-        f"${difference:,.2f}",
-
-        f"{percentage_difference:+.1f}%",
-    )
-
-
-    if (
-        a_total
-        <
-        b_total
-    ):
-
-        lower_cost = "A"
-
-
-    elif (
-        b_total
-        <
-        a_total
-    ):
-
-        lower_cost = "B"
-
-
-    else:
-
-        lower_cost = "Same"
-
-
-    s4.metric(
-
-        "Lower Cost",
-
-        lower_cost,
-    )
-
 
     a_categories = (
-
         scenario_a
-
         .assign(
-
             Category=
-                scenario_a[
-                    "Category"
-                ].replace(
+                scenario_a["Category"]
+                .replace(
                     "",
                     "Uncategorized",
                 )
         )
-
         .groupby(
             "Category",
             as_index=False,
         )["Total Cost"]
-
         .sum()
-
         .rename(
             columns={
                 "Total Cost":
@@ -2350,29 +1855,21 @@ elif page == "Scenario Comparison":
         )
     )
 
-
     b_categories = (
-
         scenario_b
-
         .assign(
-
             Category=
-                scenario_b[
-                    "Category"
-                ].replace(
+                scenario_b["Category"]
+                .replace(
                     "",
                     "Uncategorized",
                 )
         )
-
         .groupby(
             "Category",
             as_index=False,
         )["Total Cost"]
-
         .sum()
-
         .rename(
             columns={
                 "Total Cost":
@@ -2381,144 +1878,203 @@ elif page == "Scenario Comparison":
         )
     )
 
-
-    comparison_df = (
-
+    comparison = (
         pd.merge(
-
             a_categories,
-
             b_categories,
-
-            on=
-                "Category",
-
-            how=
-                "outer",
+            on="Category",
+            how="outer",
         )
-
         .fillna(
             0.0
         )
     )
 
-
-    comparison_df[
+    comparison[
         "Difference (B - A)"
     ] = (
-
-        comparison_df[
+        comparison[
             "Scenario B"
         ]
-
         -
-
-        comparison_df[
+        comparison[
             "Scenario A"
         ]
     )
 
-
-    show_section(
-
-        "Category comparison",
-
-        "See which categories caused "
-        "the cost difference.",
+    comparison[
+        "Absolute Change"
+    ] = (
+        comparison[
+            "Difference (B - A)"
+        ]
+        .abs()
     )
 
+    comparison = (
+        comparison
+        .sort_values(
+            "Absolute Change",
+            ascending=False,
+        )
+    )
 
-    if (
-        not
-        comparison_df.empty
-    ):
+    increases = (
+        comparison[
+            comparison[
+                "Difference (B - A)"
+            ]
+            >
+            0
+        ]
+    )
 
-        chart_df = (
+    decreases = (
+        comparison[
+            comparison[
+                "Difference (B - A)"
+            ]
+            <
+            0
+        ]
+    )
 
-            comparison_df
+    largest_increase = (
+        increases
+        .iloc[0]["Category"]
+        if not increases.empty
+        else "None"
+    )
 
-            .melt(
+    largest_savings = (
+        decreases
+        .iloc[0]["Category"]
+        if not decreases.empty
+        else "None"
+    )
 
-                id_vars=
-                    "Category",
+    section(
+        "Comparison summary"
+    )
 
-                value_vars=[
-                    "Scenario A",
-                    "Scenario B",
-                ],
+    c1, c2, c3, c4 = (
+        st.columns(
+            4
+        )
+    )
 
-                var_name=
-                    "Scenario",
+    with c1:
 
-                value_name=
-                    "Cost",
-            )
+        metric(
+            "Scenario A",
+            money(
+                a_total
+            ),
         )
 
+    with c2:
 
-        fig = (
-
-            px.bar(
-
-                chart_df,
-
-                x=
-                    "Category",
-
-                y=
-                    "Cost",
-
-                color=
-                    "Scenario",
-
-                barmode=
-                    "group",
-            )
+        metric(
+            "Scenario B",
+            money(
+                b_total
+            ),
         )
 
+    with c3:
+
+        metric(
+            "Difference (B − A)",
+            money(
+                difference
+            ),
+            f"{percentage_difference:+.2f}%",
+        )
+
+    with c4:
+
+        lower_cost = (
+            "A"
+            if a_total < b_total
+            else
+            "B"
+            if b_total < a_total
+            else
+            "Same"
+        )
+
+        metric(
+            "Lower-Cost Scenario",
+            lower_cost,
+        )
+
+    section(
+        "What caused the change?",
+        "Categories are ranked by the "
+        "size of their cost change.",
+    )
+
+    d1, d2 = (
+        st.columns(
+            2
+        )
+    )
+
+    with d1:
+
+        metric(
+            "Largest Cost Increase",
+            largest_increase,
+        )
+
+    with d2:
+
+        metric(
+            "Largest Savings",
+            largest_savings,
+        )
+
+    if not comparison.empty:
+
+        fig = px.bar(
+            comparison
+            .sort_values(
+                "Difference (B - A)"
+            ),
+            x=
+                "Difference (B - A)",
+            y="Category",
+            orientation="h",
+            text_auto=".2s",
+        )
 
         fig.update_layout(
-
-            height=
-                480,
-
+            height=450,
             xaxis_title=
-                "",
-
-            yaxis_title=
-                "Direct Cost ($)",
-
-            margin=
-                dict(
-                    l=10,
-                    r=10,
-                    t=20,
-                    b=10,
-                ),
+                "Cost Change from A to B ($)",
+            yaxis_title="",
+            margin=dict(
+                l=10,
+                r=20,
+                t=20,
+                b=10,
+            ),
         )
-
 
         st.plotly_chart(
-
             fig,
-
-            use_container_width=
-                True,
+            use_container_width=True,
         )
 
-
     st.dataframe(
-
-        comparison_df,
-
-        hide_index=
-            True,
-
-        use_container_width=
-            True,
-
+        comparison.drop(
+            columns=[
+                "Absolute Change"
+            ]
+        ),
+        hide_index=True,
+        use_container_width=True,
         column_config={
-
             "Scenario A":
                 st.column_config.NumberColumn(
                     format="$%.2f"
@@ -2536,240 +2092,165 @@ elif page == "Scenario Comparison":
         },
     )
 
-
-    show_footer()
+    footer()
 
 
 # ============================================================
-# COST ANALYTICS
+# ANALYTICS
 # ============================================================
 
-elif page == "Cost Analytics":
+elif page == "Analytics":
 
-    show_page_header(
-
-        "Cost Analytics",
-
-        "Understand where project money is being spent "
-        "and identify the categories driving the estimate.",
+    header(
+        "Analytics",
+        "Identify the categories and line items "
+        "driving the current project estimate.",
     )
-
 
     analytics_df = (
-        active_estimate()
-    )
-
-
-    (
-        direct_cost,
-        contingency_cost,
-        overhead_cost,
-        profit_cost,
-        grand_total,
-    ) = calculate_costs(
-        analytics_df
-    )
-
-
-    category_df = (
-        analytics_df.copy()
-    )
-
-
-    category_df[
-        "Category"
-    ] = (
-
-        category_df[
-            "Category"
-        ]
-
-        .replace(
-            "",
-            "Uncategorized",
+        clean_estimate(
+            st.session_state.estimate_data
         )
     )
 
+    (
+        direct,
+        contingency,
+        overhead,
+        profit,
+        total,
+    ) = calc(
+        analytics_df
+    )
 
     category_df = (
-
-        category_df
-
+        analytics_df
+        .assign(
+            Category=
+                analytics_df[
+                    "Category"
+                ]
+                .replace(
+                    "",
+                    "Uncategorized",
+                )
+        )
         .groupby(
             "Category",
             as_index=False,
         )["Total Cost"]
-
         .sum()
-
         .sort_values(
             "Total Cost",
             ascending=False,
         )
     )
 
+    largest_category = (
+        category_df
+        .iloc[0]["Category"]
+        if not category_df.empty
+        else "N/A"
+    )
 
-    if (
-        not
-        category_df.empty
-    ):
-
-        largest_category = (
-
-            category_df
-            .iloc[0]["Category"]
-        )
-
-    else:
-
-        largest_category = (
-            "N/A"
-        )
-
-
-    if (
-        not
-        analytics_df.empty
-    ):
-
-        average_cost = float(
-
+    average_item_cost = (
+        float(
             analytics_df[
                 "Total Cost"
             ].mean()
         )
-
-    else:
-
-        average_cost = (
-            0.0
-        )
-
+        if not analytics_df.empty
+        else 0.0
+    )
 
     a1, a2, a3, a4 = (
-
         st.columns(
             4
         )
     )
 
+    with a1:
 
-    a1.metric(
+        metric(
+            "Project Total",
+            money(
+                total
+            ),
+        )
 
-        "Project Total",
+    with a2:
 
-        f"${grand_total:,.0f}",
-    )
+        metric(
+            "Largest Category",
+            largest_category,
+        )
 
+    with a3:
 
-    a2.metric(
+        metric(
+            "Cost Items",
+            str(
+                len(
+                    analytics_df
+                )
+            ),
+        )
 
-        "Largest Category",
+    with a4:
 
-        largest_category,
-    )
+        metric(
+            "Average Item Cost",
+            money(
+                average_item_cost
+            ),
+        )
 
-
-    a3.metric(
-
-        "Cost Items",
-
-        len(
-            analytics_df
-        ),
-    )
-
-
-    a4.metric(
-
-        "Average Item Cost",
-
-        f"${average_cost:,.0f}",
-    )
-
-
-    show_section(
+    section(
         "Cost by category"
     )
 
-
     if (
-
-        direct_cost
-        >
-        0
-
+        direct > 0
         and
-
-        not
-        category_df.empty
+        not category_df.empty
     ):
 
-        fig = (
-
-            px.bar(
-
-                category_df,
-
-                x=
-                    "Total Cost",
-
-                y=
-                    "Category",
-
-                orientation=
-                    "h",
-
-                text_auto=
-                    ".2s",
-            )
+        fig = px.bar(
+            category_df,
+            x="Total Cost",
+            y="Category",
+            orientation="h",
+            text_auto=".2s",
         )
-
-
-        fig.update_layout(
-
-            height=
-                470,
-
-            xaxis_title=
-                "Direct Cost ($)",
-
-            yaxis_title=
-                "",
-
-            margin=
-                dict(
-                    l=10,
-                    r=20,
-                    t=20,
-                    b=10,
-                ),
-        )
-
 
         fig.update_yaxes(
-
             categoryorder=
                 "total ascending"
         )
 
-
-        st.plotly_chart(
-
-            fig,
-
-            use_container_width=
-                True,
+        fig.update_layout(
+            height=470,
+            xaxis_title=
+                "Direct Cost ($)",
+            yaxis_title="",
+            margin=dict(
+                l=10,
+                r=20,
+                t=20,
+                b=10,
+            ),
         )
 
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+        )
 
     left, right = (
-
         st.columns(
             2
         )
     )
-
 
     with left:
 
@@ -2777,19 +2258,11 @@ elif page == "Cost Analytics":
             "#### Category Summary"
         )
 
-
         st.dataframe(
-
             category_df,
-
-            hide_index=
-                True,
-
-            use_container_width=
-                True,
-
+            hide_index=True,
+            use_container_width=True,
             column_config={
-
                 "Total Cost":
                     st.column_config.NumberColumn(
                         format="$%.2f"
@@ -2797,61 +2270,37 @@ elif page == "Cost Analytics":
             },
         )
 
-
     with right:
 
         st.markdown(
             "#### Project Cost Summary"
         )
 
+        summary = pd.DataFrame(
+            {
+                "Description": [
+                    "Direct Cost",
+                    "Contingency",
+                    "Overhead",
+                    "Profit",
+                    "Estimated Total",
+                ],
 
-        summary_df = (
-
-            pd.DataFrame(
-                {
-
-                    "Description": [
-
-                        "Direct Cost",
-
-                        "Contingency",
-
-                        "Overhead",
-
-                        "Profit",
-
-                        "Estimated Total",
-                    ],
-
-                    "Amount": [
-
-                        direct_cost,
-
-                        contingency_cost,
-
-                        overhead_cost,
-
-                        profit_cost,
-
-                        grand_total,
-                    ],
-                }
-            )
+                "Amount": [
+                    direct,
+                    contingency,
+                    overhead,
+                    profit,
+                    total,
+                ],
+            }
         )
 
-
         st.dataframe(
-
-            summary_df,
-
-            hide_index=
-                True,
-
-            use_container_width=
-                True,
-
+            summary,
+            hide_index=True,
+            use_container_width=True,
             column_config={
-
                 "Amount":
                     st.column_config.NumberColumn(
                         format="$%.2f"
@@ -2859,591 +2308,135 @@ elif page == "Cost Analytics":
             },
         )
 
-
-    show_footer()
-
-
-# ============================================================
-# COST LIBRARY
-# ============================================================
-
-elif page == "Cost Library":
-
-    show_page_header(
-
-        "Cost Library",
-
-        "Start estimates faster with a small demo library "
-        "of common construction activities and baseline unit costs.",
+    section(
+        "Highest-cost line items"
     )
 
-
-    st.markdown(
-
-        '<div class="callout">'
-
-        '<strong>'
-        'Important:'
-        '</strong> '
-
-        'These are illustrative demo values for the BuildCost '
-        'prototype, not verified current market prices. '
-        'Always replace them with project-specific local pricing.'
-
-        '</div>',
-
-        unsafe_allow_html=True,
+    top_items = (
+        analytics_df
+        .sort_values(
+            "Total Cost",
+            ascending=False,
+        )
+        .head(
+            10
+        )
     )
-
 
     st.dataframe(
-
-        COST_LIBRARY,
-
-        hide_index=
-            True,
-
-        use_container_width=
-            True,
-
+        top_items,
+        hide_index=True,
+        use_container_width=True,
         column_config={
+            "Quantity":
+                st.column_config.NumberColumn(
+                    format="%.2f"
+                ),
 
-            "Baseline Unit Cost ($)":
+            "Unit Cost ($)":
                 st.column_config.NumberColumn(
                     format="$%.2f"
-                )
+                ),
+
+            "Total Cost":
+                st.column_config.NumberColumn(
+                    format="$%.2f"
+                ),
         },
     )
 
-
-    library_choice = (
-
-        st.selectbox(
-
-            "Add an item to your current estimate",
-
-            COST_LIBRARY[
-                "Item"
-            ].tolist(),
-
-            key=
-                "library_page_choice",
-        )
-    )
-
-
-    st.button(
-
-        "Add to Estimate",
-
-        type=
-            "primary",
-
-        on_click=
-            add_library_item,
-
-        args=
-            (library_choice,),
-
-        key=
-            "library_page_add_button",
-    )
-
-
-    show_footer()
+    footer()
 
 
 # ============================================================
-# PROJECT INFORMATION
+# ABOUT
 # ============================================================
 
-elif page == "Project Information":
+elif page == "About":
 
-    show_page_header(
-
-        "Project Information",
-
-        "Keep the basic information associated "
-        "with your construction estimate organized in one place.",
-    )
-
-
-    left, right = (
-
-        st.columns(
-            2
-        )
-    )
-
-
-    with left:
-
-        st.text_input(
-
-            "Project name",
-
-            key=
-                "project_name",
-        )
-
-
-        st.text_input(
-
-            "Client",
-
-            key=
-                "client",
-        )
-
-
-    with right:
-
-        st.text_input(
-
-            "Project location",
-
-            key=
-                "project_location",
-        )
-
-
-        st.selectbox(
-
-            "Project type",
-
-            PROJECT_TYPES,
-
-            key=
-                "project_type",
-        )
-
-
-    st.text_area(
-
-        "Project notes",
-
-        key=
-            "project_notes",
-
-        height=
-            170,
-
-        placeholder=
-            "Enter project scope, assumptions, "
-            "estimate notes, or other important information...",
-    )
-
-
-    show_section(
-        "Project snapshot"
-    )
-
-
-    project_df = (
-        active_estimate()
-    )
-
-
-    (
-        project_direct,
-        project_contingency,
-        project_overhead,
-        project_profit,
-        project_total,
-    ) = calculate_costs(
-        project_df
-    )
-
-
-    p1, p2, p3 = (
-
-        st.columns(
-            3
-        )
-    )
-
-
-    p1.metric(
-
-        "Estimated Cost",
-
-        f"${project_total:,.0f}",
-    )
-
-
-    p2.metric(
-
-        "Estimate Items",
-
-        len(
-            project_df
-        ),
-    )
-
-
-    p3.metric(
-
-        "Project Type",
-
-        st.session_state.project_type,
-    )
-
-
-    show_footer()
-
-
-# ============================================================
-# ABOUT BUILDCOST
-# ============================================================
-
-elif page == "About BuildCost":
-
-    show_page_header(
-
+    header(
         "About BuildCost",
-
-        "A construction-tech prototype focused on early-stage "
-        "estimating, cost visibility, and alternative comparison.",
+        "A construction-tech hackathon prototype "
+        "focused on estimating, uncertainty, "
+        "alternative comparison, and project cost visibility.",
     )
-
 
     st.markdown(
-
         '<div class="hero">'
-
         '<div class="hero-badge">'
-        'WHY BUILDCOST'
+        'THE IDEA'
         '</div>'
-
         '<h1 style="font-size:3.5rem;">'
-
         'Estimate the project.'
-
         '<br>'
-
         '<span style="color:#FB923C;">'
-
         'Then challenge the assumptions.'
-
         '</span>'
-
         '</h1>'
-
         '<p>'
-
-        'BuildCost brings the estimate, cost analytics, '
-        'a starter cost library, and scenario comparison '
-        'into one lightweight web application.'
-
+        'BuildCost combines a project estimate, '
+        'construction cost library, Monte Carlo risk analysis, '
+        'scenario comparison, and cost-driver analytics '
+        'in one lightweight web application.'
         '</p>'
-
         '</div>',
-
         unsafe_allow_html=True,
     )
 
-
     c1, c2, c3 = (
-
         st.columns(
             3
         )
     )
 
-
     with c1:
 
-        show_card(
-
+        feature(
             "PROBLEM",
-
-            "Early estimates change",
-
-            "Quantities, materials, and pricing assumptions "
-            "can shift quickly during planning and design.",
+            "A single estimate hides uncertainty",
+            "Construction quantities, unit prices, "
+            "and design choices can change throughout planning.",
         )
-
 
     with c2:
 
-        show_card(
-
+        feature(
             "SOLUTION",
-
-            "Make changes visible",
-
-            "BuildCost shows the estimate and the categories "
-            "responsible for cost differences.",
+            "Make decisions visible",
+            "BuildCost shows the baseline, the possible "
+            "cost range, and the categories responsible for changes.",
         )
-
 
     with c3:
 
-        show_card(
-
-            "NEXT",
-
-            "Grow the platform",
-
-            "Future versions could add regional price data, "
-            "saved projects, accounts, reports, and collaboration.",
+        feature(
+            "FUTURE",
+            "Connect better data",
+            "Future versions could add regional price databases, "
+            "saved projects, collaboration, and professional reporting.",
         )
 
-
-    show_section(
+    section(
         "Technology"
     )
 
-
     st.write(
-
         "**Python** · "
         "**Streamlit** · "
         "**Pandas** · "
+        "**NumPy** · "
         "**Plotly** · "
         "**GitHub**"
     )
 
-
-    show_footer()
-
-
-# ============================================================
-# CONTACT
-# ============================================================
-
-elif page == "Contact":
-
-    show_page_header(
-
-        "Contact BuildCost",
-
-        "Questions, product feedback, feature ideas, "
-        "or collaboration opportunities.",
+    st.markdown(
+        '<div class="callout">'
+        '<strong>Hackathon focus:</strong> '
+        'BuildCost is a decision-support prototype, '
+        'not a replacement for professional estimating '
+        'software or verified construction cost databases.'
+        '</div>',
+        unsafe_allow_html=True,
     )
 
-
-    left, right = (
-
-        st.columns(
-            [
-                1.3,
-                0.7,
-            ]
-        )
-    )
-
-
-    with left:
-
-        show_section(
-
-            "Let's talk construction.",
-
-            "Prepare an email directly "
-            "from the BuildCost website.",
-        )
-
-
-        with st.form(
-            "contact_form",
-            clear_on_submit=False,
-        ):
-
-            contact_name = (
-                st.text_input(
-                    "Name"
-                )
-            )
-
-
-            contact_email = (
-                st.text_input(
-                    "Email"
-                )
-            )
-
-
-            contact_topic = (
-                st.selectbox(
-
-                    "What would you like to discuss?",
-
-                    [
-                        "General Question",
-                        "Product Feedback",
-                        "Feature Request",
-                        "Collaboration",
-                        "Technical Issue",
-                        "Other",
-                    ],
-                )
-            )
-
-
-            contact_message = (
-
-                st.text_area(
-
-                    "Message",
-
-                    height=
-                        180,
-
-                    placeholder=
-                        "How can we help?",
-                )
-            )
-
-
-            submitted = (
-
-                st.form_submit_button(
-
-                    "Prepare Email →",
-
-                    use_container_width=
-                        True,
-                )
-            )
-
-
-        if submitted:
-
-            if (
-
-                not
-                contact_name.strip()
-
-                or
-
-                not
-                contact_email.strip()
-
-                or
-
-                not
-                contact_message.strip()
-            ):
-
-                st.warning(
-
-                    "Please enter your name, "
-                    "email, and message."
-                )
-
-
-            elif (
-
-                CONTACT_EMAIL
-                ==
-                "your-email@example.com"
-            ):
-
-                st.warning(
-
-                    "Replace CONTACT_EMAIL near the top "
-                    "of app.py with the email address "
-                    "you want BuildCost messages sent to."
-                )
-
-
-            else:
-
-                subject = quote(
-
-                    f"BuildCost - "
-                    f"{contact_topic}"
-                )
-
-
-                body = quote(
-
-                    f"Name: "
-                    f"{contact_name}\n"
-
-                    f"Email: "
-                    f"{contact_email}\n"
-
-                    f"Topic: "
-                    f"{contact_topic}\n\n"
-
-                    f"Message:\n"
-                    f"{contact_message}"
-                )
-
-
-                mailto_url = (
-
-                    f"mailto:"
-                    f"{CONTACT_EMAIL}"
-
-                    f"?subject="
-                    f"{subject}"
-
-                    f"&body="
-                    f"{body}"
-                )
-
-
-                st.success(
-                    "Your email is ready."
-                )
-
-
-                st.markdown(
-
-                    f'<a href="{mailto_url}">'
-
-                    'Open your email app '
-                    'to send the message'
-
-                    '</a>',
-
-                    unsafe_allow_html=True,
-                )
-
-
-    with right:
-
-        st.markdown(
-
-            '<div class="info-card">'
-
-            '<h3>'
-            '🏗️ BuildCost'
-            '</h3>'
-
-            '<p>'
-            'Construction cost intelligence '
-            'for clearer early-stage planning '
-            'and alternative comparison.'
-            '</p>'
-
-            '</div>',
-
-            unsafe_allow_html=True,
-        )
-
-
-        st.markdown(
-
-            '<div class="info-card">'
-
-            '<h3>'
-            'Hackathon prototype'
-            '</h3>'
-
-            '<p>'
-            'Feedback on estimating, scenario analysis, '
-            'construction data, and future workflows '
-            'is welcome.'
-            '</p>'
-
-            '</div>',
-
-            unsafe_allow_html=True,
-        )
-
-
-    show_footer()
+    footer()
