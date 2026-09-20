@@ -5,17 +5,11 @@ from urllib.parse import quote
 
 
 # ============================================================
-# BUILDCOST V2
-# Construction Cost Planning Platform
+# BUILDCOST V2.1
 # ============================================================
 
-
-# ------------------------------------------------------------
-# PAGE CONFIG
-# ------------------------------------------------------------
-
 st.set_page_config(
-    page_title="BuildCost | Construction Cost Intelligence",
+    page_title="BuildCost",
     page_icon="🏗️",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -23,13 +17,12 @@ st.set_page_config(
 
 
 # ------------------------------------------------------------
-# BRAND / SETTINGS
+# SETTINGS
 # ------------------------------------------------------------
 
-BRAND_NAME = "BuildCost"
 CONTACT_EMAIL = "your-email@example.com"
 
-NAV_OPTIONS = [
+PAGES = [
     "Home",
     "Cost Estimator",
     "Cost Analytics",
@@ -40,267 +33,178 @@ NAV_OPTIONS = [
 
 
 # ------------------------------------------------------------
-# CSS
+# DESIGN / CSS
 # ------------------------------------------------------------
 
 st.markdown(
     """
-    <style>
+<style>
 
-    /* ---------- GLOBAL ---------- */
+.stApp {
+    background: #F8FAFC;
+}
 
-    .stApp {
-        background: #F8FAFC;
-    }
+.block-container {
+    max-width: 1400px;
+    padding-top: 1.5rem;
+    padding-bottom: 4rem;
+}
 
-    .block-container {
-        max-width: 1450px;
-        padding-top: 1.6rem;
-        padding-bottom: 4rem;
-    }
+[data-testid="stHeader"] {
+    background: rgba(248, 250, 252, 0.94);
+}
 
-    h1, h2, h3 {
-        letter-spacing: -0.025em;
-    }
+[data-testid="stSidebar"] {
+    background: #0F172A;
+}
 
-    /* ---------- STREAMLIT HEADER ---------- */
+[data-testid="stSidebar"] * {
+    color: #F8FAFC;
+}
 
-    [data-testid="stHeader"] {
-        background: rgba(248, 250, 252, 0.92);
-    }
+.hero {
+    padding: 70px 58px;
+    border-radius: 26px;
+    background: linear-gradient(135deg, #0F172A, #1E293B);
+    color: white;
+    margin-bottom: 28px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+}
 
-    /* ---------- SIDEBAR ---------- */
+.hero-badge {
+    display: inline-block;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(249, 115, 22, 0.14);
+    border: 1px solid rgba(249, 115, 22, 0.45);
+    color: #FDBA74;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    margin-bottom: 18px;
+}
 
-    [data-testid="stSidebar"] {
-        background: #0F172A;
-        border-right: 1px solid #1E293B;
-    }
+.hero h1 {
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    line-height: 1;
+    margin: 0;
+    letter-spacing: -0.05em;
+}
 
-    [data-testid="stSidebar"] * {
-        color: #F8FAFC;
-    }
+.hero p {
+    max-width: 760px;
+    color: #CBD5E1;
+    font-size: 1.08rem;
+    line-height: 1.7;
+    margin: 22px 0 0;
+}
 
-    [data-testid="stSidebar"] hr {
-        border-color: #334155;
-    }
+.page-head {
+    padding: 32px 36px;
+    border-radius: 22px;
+    background: #0F172A;
+    color: white;
+    margin-bottom: 26px;
+}
 
-    /* ---------- HERO ---------- */
+.page-head h1 {
+    margin: 0;
+    font-size: 2.3rem;
+}
 
-    .hero {
-        position: relative;
-        overflow: hidden;
-        padding: 76px 64px;
-        border-radius: 26px;
-        background:
-            radial-gradient(
-                circle at 90% 15%,
-                rgba(249, 115, 22, 0.28),
-                transparent 25%
-            ),
-            linear-gradient(
-                135deg,
-                #0F172A 0%,
-                #172033 55%,
-                #1E293B 100%
-            );
-        color: white;
-        margin-bottom: 30px;
-        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.14);
-    }
+.page-head p {
+    color: #CBD5E1;
+    margin: 8px 0 0;
+    max-width: 800px;
+}
 
-    .hero-badge {
-        display: inline-block;
-        padding: 7px 13px;
-        border-radius: 999px;
-        background: rgba(249, 115, 22, 0.15);
-        border: 1px solid rgba(249, 115, 22, 0.4);
-        color: #FDBA74;
-        font-weight: 700;
-        font-size: 0.78rem;
-        letter-spacing: 0.08em;
-        margin-bottom: 20px;
-    }
+.card {
+    min-height: 205px;
+    padding: 27px;
+    border-radius: 19px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 7px 25px rgba(15, 23, 42, 0.05);
+    margin-bottom: 16px;
+}
 
-    .hero h1 {
-        font-size: clamp(2.6rem, 6vw, 5.2rem);
-        line-height: 0.98;
-        margin: 0;
-        max-width: 850px;
-        letter-spacing: -0.055em;
-    }
+.card .eyebrow {
+    color: #F97316;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+}
 
-    .hero p {
-        max-width: 760px;
-        color: #CBD5E1;
-        font-size: 1.12rem;
-        line-height: 1.7;
-        margin-top: 24px;
-        margin-bottom: 0;
-    }
+.card h3 {
+    color: #0F172A;
+    margin: 14px 0 8px;
+    font-size: 1.3rem;
+}
 
-    /* ---------- PAGE HEADER ---------- */
+.card p {
+    color: #64748B;
+    line-height: 1.6;
+    margin: 0;
+}
 
-    .page-header {
-        padding: 34px 38px;
-        border-radius: 22px;
-        background: #0F172A;
-        color: white;
-        margin-bottom: 26px;
-    }
+.section-title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #0F172A;
+    letter-spacing: -0.03em;
+    margin: 28px 0 4px;
+}
 
-    .page-header h1 {
-        margin: 0;
-        font-size: 2.3rem;
-    }
+.section-sub {
+    color: #64748B;
+    margin-bottom: 20px;
+}
 
-    .page-header p {
-        margin: 8px 0 0;
-        color: #CBD5E1;
-        max-width: 800px;
-    }
+[data-testid="stMetric"] {
+    background: white;
+    border: 1px solid #E2E8F0;
+    padding: 20px;
+    border-radius: 17px;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.04);
+}
 
-    /* ---------- CARDS ---------- */
+.stButton > button {
+    border-radius: 11px;
+    min-height: 45px;
+    font-weight: 700;
+}
 
-    .feature-card {
-        min-height: 215px;
-        padding: 28px;
-        border-radius: 20px;
-        background: white;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
-        margin-bottom: 18px;
-    }
+.stButton > button[kind="primary"] {
+    background: #F97316;
+    border-color: #F97316;
+    color: white;
+}
 
-    .feature-number {
-        color: #F97316;
-        font-size: 0.82rem;
-        font-weight: 800;
-        letter-spacing: 0.1em;
-    }
+.stDownloadButton > button {
+    border-radius: 11px;
+    min-height: 45px;
+    font-weight: 700;
+    background: #0F172A;
+    color: white;
+    border-color: #0F172A;
+}
 
-    .feature-card h3 {
-        color: #0F172A;
-        margin-top: 15px;
-        margin-bottom: 9px;
-        font-size: 1.35rem;
-    }
+.footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid #E2E8F0;
+    color: #94A3B8;
+    font-size: 0.85rem;
+}
 
-    .feature-card p {
-        color: #64748B;
-        line-height: 1.65;
-        margin-bottom: 0;
-    }
-
-    .info-card {
-        padding: 26px;
-        border-radius: 18px;
-        background: white;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 6px 22px rgba(15, 23, 42, 0.04);
-        margin-bottom: 18px;
-    }
-
-    .info-card h3 {
-        margin-top: 0;
-        color: #0F172A;
-    }
-
-    .info-card p {
-        color: #64748B;
-        line-height: 1.65;
-    }
-
-    /* ---------- METRICS ---------- */
-
-    [data-testid="stMetric"] {
-        background: white;
-        border: 1px solid #E2E8F0;
-        padding: 22px;
-        border-radius: 18px;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
-    }
-
-    [data-testid="stMetricLabel"] {
-        color: #64748B;
-    }
-
-    [data-testid="stMetricValue"] {
-        color: #0F172A;
-    }
-
-    /* ---------- BUTTONS ---------- */
-
-    .stButton > button {
-        border-radius: 12px;
-        min-height: 46px;
-        font-weight: 700;
-        border: 1px solid #CBD5E1;
-    }
-
-    .stButton > button[kind="primary"] {
-        background: #F97316;
-        border-color: #F97316;
-        color: white;
-    }
-
-    .stDownloadButton > button {
-        border-radius: 12px;
-        min-height: 46px;
-        font-weight: 700;
-        background: #0F172A;
-        color: white;
-        border: 1px solid #0F172A;
-    }
-
-    /* ---------- INPUTS ---------- */
-
-    div[data-baseweb="input"] > div,
-    div[data-baseweb="select"] > div,
-    textarea {
-        border-radius: 10px !important;
-    }
-
-    /* ---------- SECTION ---------- */
-
-    .section-title {
-        margin-top: 20px;
-        margin-bottom: 6px;
-        font-size: 2rem;
-        color: #0F172A;
-        font-weight: 800;
-        letter-spacing: -0.035em;
-    }
-
-    .section-subtitle {
-        color: #64748B;
-        margin-bottom: 24px;
-        font-size: 1rem;
-    }
-
-    /* ---------- ACCENT ---------- */
-
-    .accent {
-        color: #F97316;
-    }
-
-    /* ---------- FOOTER ---------- */
-
-    .footer {
-        margin-top: 55px;
-        padding-top: 22px;
-        border-top: 1px solid #E2E8F0;
-        color: #94A3B8;
-        font-size: 0.86rem;
-    }
-
-    </style>
+</style>
     """,
     unsafe_allow_html=True
 )
 
 
 # ------------------------------------------------------------
-# DEFAULT DATA
+# DEFAULT ESTIMATE
 # ------------------------------------------------------------
 
 def default_items():
@@ -328,43 +232,36 @@ def default_items():
 # SESSION STATE
 # ------------------------------------------------------------
 
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
+defaults = {
+    "page": "Home",
+    "project_name": "Residential Site Development",
+    "client": "Example Client",
+    "project_location": "Blacksburg, VA",
+    "project_type": "Land Development",
+    "project_notes": "",
+    "contingency": 10.0,
+    "overhead": 5.0,
+    "profit": 8.0
+}
 
-if "project_name" not in st.session_state:
-    st.session_state.project_name = "Residential Site Development"
+for key, value in defaults.items():
 
-if "client" not in st.session_state:
-    st.session_state.client = "Example Client"
+    if key not in st.session_state:
+        st.session_state[key] = value
 
-if "project_location" not in st.session_state:
-    st.session_state.project_location = "Blacksburg, VA"
 
-if "project_type" not in st.session_state:
-    st.session_state.project_type = "Land Development"
+if "current_estimate" not in st.session_state:
 
-if "project_notes" not in st.session_state:
-    st.session_state.project_notes = ""
-
-if "contingency" not in st.session_state:
-    st.session_state.contingency = 10.0
-
-if "overhead" not in st.session_state:
-    st.session_state.overhead = 5.0
-
-if "profit" not in st.session_state:
-    st.session_state.profit = 8.0
+    st.session_state.current_estimate = default_items()
 
 
 # ------------------------------------------------------------
-# HELPER FUNCTIONS
+# FUNCTIONS
 # ------------------------------------------------------------
 
-def clean_estimate(df):
+def clean_estimate(data):
 
-    cleaned = df.copy()
-
-    required_columns = [
+    required = [
         "Category",
         "Item",
         "Quantity",
@@ -372,35 +269,49 @@ def clean_estimate(df):
         "Unit Cost ($)"
     ]
 
-    for column in required_columns:
+    df = pd.DataFrame(data).copy()
 
-        if column not in cleaned.columns:
-            cleaned[column] = ""
+    for column in required:
 
-    cleaned = cleaned[required_columns]
+        if column not in df.columns:
 
-    for column in ["Category", "Item", "Unit"]:
+            if column in ["Quantity", "Unit Cost ($)"]:
+                df[column] = 0.0
 
-        cleaned[column] = (
-            cleaned[column]
+            else:
+                df[column] = ""
+
+    df = df[required]
+
+    for column in [
+        "Category",
+        "Item",
+        "Unit"
+    ]:
+
+        df[column] = (
+            df[column]
             .fillna("")
             .astype(str)
         )
 
-    for column in ["Quantity", "Unit Cost ($)"]:
+    for column in [
+        "Quantity",
+        "Unit Cost ($)"
+    ]:
 
-        cleaned[column] = pd.to_numeric(
-            cleaned[column],
+        df[column] = pd.to_numeric(
+            df[column],
             errors="coerce"
         ).fillna(0.0)
 
-    cleaned["Total Cost"] = (
-        cleaned["Quantity"]
+    df["Total Cost"] = (
+        df["Quantity"]
         *
-        cleaned["Unit Cost ($)"]
+        df["Unit Cost ($)"]
     )
 
-    return cleaned
+    return df
 
 
 def calculate_costs(df):
@@ -412,17 +323,17 @@ def calculate_costs(df):
     contingency_cost = (
         direct
         *
-        st.session_state.contingency
+        float(st.session_state.contingency)
         /
-        100.0
+        100
     )
 
     overhead_cost = (
         direct
         *
-        st.session_state.overhead
+        float(st.session_state.overhead)
         /
-        100.0
+        100
     )
 
     subtotal = (
@@ -436,9 +347,9 @@ def calculate_costs(df):
     profit_cost = (
         subtotal
         *
-        st.session_state.profit
+        float(st.session_state.profit)
         /
-        100.0
+        100
     )
 
     total = (
@@ -458,13 +369,15 @@ def calculate_costs(df):
 
 def page_header(title, description):
 
+    html = (
+        '<div class="page-head">'
+        f'<h1>{title}</h1>'
+        f'<p>{description}</p>'
+        '</div>'
+    )
+
     st.markdown(
-        f"""
-        <div class="page-header">
-            <h1>{title}</h1>
-            <p>{description}</p>
-        </div>
-        """,
+        html,
         unsafe_allow_html=True
     )
 
@@ -472,50 +385,40 @@ def page_header(title, description):
 def footer():
 
     st.markdown(
-        """
-        <div class="footer">
-            <strong>BuildCost</strong> • Construction Cost Intelligence
-            <br>
-            Estimates are planning tools. Unit costs should be verified
-            for the specific project, location, scope, and date.
-        </div>
-        """,
+        '<div class="footer">'
+        '<strong>BuildCost</strong> • Construction Cost Intelligence'
+        '<br>'
+        'Planning estimates should be verified for project scope, '
+        'location, and date.'
+        '</div>',
         unsafe_allow_html=True
     )
 
 
 # ------------------------------------------------------------
-# SIDEBAR / HAMBURGER MENU
+# NAVIGATION
 # ------------------------------------------------------------
 
 with st.sidebar:
 
     st.markdown(
-        """
-        <div style="
-            font-size:1.65rem;
-            font-weight:900;
-            padding-top:10px;
-            margin-bottom:2px;
-        ">
-            🏗️ BUILDCOST
-        </div>
-
-        <div style="
-            color:#94A3B8;
-            font-size:.82rem;
-            margin-bottom:22px;
-        ">
-            CONSTRUCTION COST INTELLIGENCE
-        </div>
-        """,
+        '<div style="font-size:1.6rem;font-weight:900;'
+        'margin:8px 0 2px;">'
+        '🏗️ BUILDCOST'
+        '</div>',
         unsafe_allow_html=True
+    )
+
+    st.caption(
+        "CONSTRUCTION COST INTELLIGENCE"
     )
 
     selected_page = st.radio(
         "Navigation",
-        NAV_OPTIONS,
-        index=NAV_OPTIONS.index(st.session_state.page),
+        PAGES,
+        index=PAGES.index(
+            st.session_state.page
+        ),
         label_visibility="collapsed"
     )
 
@@ -523,7 +426,9 @@ with st.sidebar:
 
     st.divider()
 
-    st.caption("CURRENT PROJECT")
+    st.caption(
+        "CURRENT PROJECT"
+    )
 
     st.write(
         f"**{st.session_state.project_name}**"
@@ -536,28 +441,13 @@ with st.sidebar:
     st.divider()
 
     st.caption(
-        "BuildCost v2.0"
+        "BuildCost v2.1"
     )
 
 
 # ------------------------------------------------------------
-# CURRENT ESTIMATE DATA
+# CURRENT COST INFORMATION
 # ------------------------------------------------------------
-
-# The estimator widget maintains its own state.
-# This safely reads the current edited value when available.
-
-if "estimate_editor" in st.session_state:
-
-    editor_state = st.session_state["estimate_editor"]
-
-# Use a stable starting DataFrame for calculations outside estimator.
-# The current estimate is also stored separately after editor use.
-
-if "current_estimate" not in st.session_state:
-
-    st.session_state.current_estimate = default_items()
-
 
 current_df = clean_estimate(
     st.session_state.current_estimate
@@ -569,7 +459,9 @@ current_df = clean_estimate(
     overhead_cost,
     profit_cost,
     grand_total
-) = calculate_costs(current_df)
+) = calculate_costs(
+    current_df
+)
 
 
 # ============================================================
@@ -578,35 +470,33 @@ current_df = clean_estimate(
 
 if st.session_state.page == "Home":
 
+    hero_html = (
+        '<div class="hero">'
+        '<div class="hero-badge">'
+        'CONSTRUCTION COST INTELLIGENCE'
+        '</div>'
+        '<h1>'
+        'Build smarter.'
+        '<br>'
+        '<span style="color:#FB923C;">'
+        'Estimate faster.'
+        '</span>'
+        '</h1>'
+        '<p>'
+        'BuildCost helps contractors, engineers, developers, '
+        'and project teams turn construction quantities and unit '
+        'pricing into clear early-stage project estimates.'
+        '</p>'
+        '</div>'
+    )
+
     st.markdown(
-        """
-        <div class="hero">
-
-            <div class="hero-badge">
-                CONSTRUCTION COST INTELLIGENCE
-            </div>
-
-            <h1>
-                Build smarter.<br>
-                <span style="color:#FB923C;">
-                    Estimate faster.
-                </span>
-            </h1>
-
-            <p>
-                BuildCost helps contractors, engineers, developers,
-                and project teams transform construction quantities
-                and unit pricing into clear, organized early-stage
-                project estimates.
-            </p>
-
-        </div>
-        """,
+        hero_html,
         unsafe_allow_html=True
     )
 
     button1, button2, spacer = st.columns(
-        [1.1, 1.1, 4]
+        [1.2, 1.1, 4]
     )
 
     with button1:
@@ -631,76 +521,62 @@ if st.session_state.page == "Home":
             st.rerun()
 
     st.markdown(
-        """
-        <div class="section-title">
-            From quantities to project cost.
-        </div>
-
-        <div class="section-subtitle">
-            One workspace for early construction cost planning.
-        </div>
-        """,
+        '<div class="section-title">'
+        'From quantities to project cost.'
+        '</div>'
+        '<div class="section-sub">'
+        'One workspace for early construction cost planning.'
+        '</div>',
         unsafe_allow_html=True
     )
 
     c1, c2, c3 = st.columns(3)
 
-    with c1:
-
-        st.markdown(
-            """
-            <div class="feature-card">
-                <div class="feature-number">01 — ESTIMATE</div>
-                <h3>Build your estimate</h3>
-                <p>
-                    Organize construction activities, quantities,
-                    units, and unit prices in an editable project
-                    estimate.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
+    cards = [
+        (
+            "01 — ESTIMATE",
+            "Build your estimate",
+            "Organize construction activities, quantities, units, "
+            "and unit prices in an editable estimate."
+        ),
+        (
+            "02 — ANALYZE",
+            "Understand your costs",
+            "See which construction categories drive project cost "
+            "with interactive visualizations and metrics."
+        ),
+        (
+            "03 — EXPORT",
+            "Take your data with you",
+            "Export organized estimate data for documentation, "
+            "analysis, and project planning."
         )
+    ]
 
-    with c2:
+    for column, card in zip(
+        [c1, c2, c3],
+        cards
+    ):
 
-        st.markdown(
-            """
-            <div class="feature-card">
-                <div class="feature-number">02 — ANALYZE</div>
-                <h3>Understand your costs</h3>
-                <p>
-                    See which construction categories are driving
-                    project cost using interactive visualizations
-                    and project metrics.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        with column:
 
-    with c3:
+            card_html = (
+                '<div class="card">'
+                f'<div class="eyebrow">{card[0]}</div>'
+                f'<h3>{card[1]}</h3>'
+                f'<p>{card[2]}</p>'
+                '</div>'
+            )
 
-        st.markdown(
-            """
-            <div class="feature-card">
-                <div class="feature-number">03 — EXPORT</div>
-                <h3>Take your data with you</h3>
-                <p>
-                    Export organized estimate data for documentation,
-                    additional analysis, and project planning.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+            st.markdown(
+                card_html,
+                unsafe_allow_html=True
+            )
 
     st.markdown(
-        """
-        <div class="section-title">
-            Current project snapshot
-        </div>
-        """,
+        '<div class="section-title">'
+        'Current project snapshot'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -718,7 +594,7 @@ if st.session_state.page == "Home":
 
     m3.metric(
         "Cost Items",
-        f"{len(current_df)}"
+        len(current_df)
     )
 
     category_count = (
@@ -744,65 +620,65 @@ elif st.session_state.page == "Cost Estimator":
 
     page_header(
         "Cost Estimator",
-        "Build an early-stage project estimate using construction "
+        "Build an early-stage estimate using construction "
         "quantities, units, and unit pricing."
     )
 
     st.markdown(
-        """
-        <div class="section-title">
-            Project markups
-        </div>
-
-        <div class="section-subtitle">
-            Configure the percentages applied to your project estimate.
-        </div>
-        """,
+        '<div class="section-title">'
+        'Project markups'
+        '</div>'
+        '<div class="section-sub">'
+        'Configure the percentages applied to your estimate.'
+        '</div>',
         unsafe_allow_html=True
     )
 
-    markup1, markup2, markup3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-    with markup1:
+    with col1:
 
         st.session_state.contingency = st.number_input(
             "Contingency (%)",
             min_value=0.0,
             max_value=100.0,
-            value=float(st.session_state.contingency),
+            value=float(
+                st.session_state.contingency
+            ),
             step=0.5
         )
 
-    with markup2:
+    with col2:
 
         st.session_state.overhead = st.number_input(
             "Overhead (%)",
             min_value=0.0,
             max_value=100.0,
-            value=float(st.session_state.overhead),
+            value=float(
+                st.session_state.overhead
+            ),
             step=0.5
         )
 
-    with markup3:
+    with col3:
 
         st.session_state.profit = st.number_input(
             "Profit (%)",
             min_value=0.0,
             max_value=100.0,
-            value=float(st.session_state.profit),
+            value=float(
+                st.session_state.profit
+            ),
             step=0.5
         )
 
     st.markdown(
-        """
-        <div class="section-title">
-            Estimate items
-        </div>
-
-        <div class="section-subtitle">
-            Edit existing items or add new construction activities.
-        </div>
-        """,
+        '<div class="section-title">'
+        'Estimate items'
+        '</div>'
+        '<div class="section-sub">'
+        'Edit existing items or add new construction activities.'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -841,15 +717,13 @@ elif st.session_state.page == "Cost Estimator":
                     min_value=0.0,
                     format="$%.2f"
                 )
-        },
-        key="estimate_editor"
+        }
     )
 
     working_df = clean_estimate(
         edited
     )
 
-    # Keep latest estimate available to other pages.
     st.session_state.current_estimate = (
         working_df[
             [
@@ -873,11 +747,9 @@ elif st.session_state.page == "Cost Estimator":
     )
 
     st.markdown(
-        """
-        <div class="section-title">
-            Estimate summary
-        </div>
-        """,
+        '<div class="section-title">'
+        'Estimate summary'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -905,7 +777,9 @@ elif st.session_state.page == "Cost Estimator":
         f"${grand_total:,.2f}"
     )
 
-    st.markdown("#### Detailed estimate")
+    st.markdown(
+        "#### Detailed estimate"
+    )
 
     st.dataframe(
         working_df,
@@ -930,9 +804,7 @@ elif st.session_state.page == "Cost Estimator":
         }
     )
 
-    export_df = working_df.copy()
-
-    csv_data = export_df.to_csv(
+    csv = working_df.to_csv(
         index=False
     ).encode(
         "utf-8"
@@ -940,9 +812,9 @@ elif st.session_state.page == "Cost Estimator":
 
     st.download_button(
         "⬇ Download Estimate CSV",
-        data=csv_data,
-        file_name="BuildCost_Estimate.csv",
-        mime="text/csv"
+        csv,
+        "BuildCost_Estimate.csv",
+        "text/csv"
     )
 
     footer()
@@ -956,8 +828,8 @@ elif st.session_state.page == "Cost Analytics":
 
     page_header(
         "Cost Analytics",
-        "Understand where project money is being spent and identify "
-        "the categories driving your estimate."
+        "Understand where project money is being spent and "
+        "which categories drive your estimate."
     )
 
     analytics_df = clean_estimate(
@@ -974,98 +846,87 @@ elif st.session_state.page == "Cost Analytics":
         analytics_df
     )
 
-    if not analytics_df.empty:
+    category_df = analytics_df.copy()
 
-        category_df = (
-            analytics_df
-            .assign(
-                Category=analytics_df["Category"]
-                .replace("", "Uncategorized")
-            )
-            .groupby(
-                "Category",
-                as_index=False
-            )["Total Cost"]
-            .sum()
-            .sort_values(
-                "Total Cost",
-                ascending=False
-            )
+    category_df["Category"] = (
+        category_df["Category"]
+        .replace(
+            "",
+            "Uncategorized"
         )
+    )
 
-        if not category_df.empty:
+    category_df = (
+        category_df
+        .groupby(
+            "Category",
+            as_index=False
+        )["Total Cost"]
+        .sum()
+        .sort_values(
+            "Total Cost",
+            ascending=False
+        )
+    )
 
-            largest_category = (
-                category_df.iloc[0]["Category"]
-            )
+    if len(category_df) > 0:
 
-            largest_category_cost = float(
-                category_df.iloc[0]["Total Cost"]
-            )
-
-        else:
-
-            largest_category = "N/A"
-            largest_category_cost = 0.0
+        largest_category = (
+            category_df.iloc[0]["Category"]
+        )
 
     else:
 
-        category_df = pd.DataFrame(
-            columns=[
-                "Category",
-                "Total Cost"
-            ]
-        )
-
         largest_category = "N/A"
-        largest_category_cost = 0.0
 
-    average_item_cost = (
-        float(
-            analytics_df["Total Cost"].mean()
+    if len(analytics_df) > 0:
+
+        average_item_cost = float(
+            analytics_df[
+                "Total Cost"
+            ].mean()
         )
-        if len(analytics_df) > 0
-        else 0.0
-    )
 
-    a1, a2, a3, a4 = st.columns(4)
+    else:
 
-    a1.metric(
+        average_item_cost = 0.0
+
+    m1, m2, m3, m4 = st.columns(4)
+
+    m1.metric(
         "Project Total",
         f"${grand_total:,.0f}"
     )
 
-    a2.metric(
+    m2.metric(
         "Largest Category",
         largest_category
     )
 
-    a3.metric(
+    m3.metric(
         "Cost Items",
         len(analytics_df)
     )
 
-    a4.metric(
+    m4.metric(
         "Average Item Cost",
         f"${average_item_cost:,.0f}"
     )
 
     st.markdown(
-        """
-        <div class="section-title">
-            Cost by category
-        </div>
-        """,
+        '<div class="section-title">'
+        'Cost by category'
+        '</div>',
         unsafe_allow_html=True
     )
 
     if (
-        not category_df.empty
-        and
         direct_cost > 0
+        and
+        len(category_df) > 0
     ):
 
-        chart = px.bar(
+        fig = px.bar(
             category_df,
             x="Total Cost",
             y="Category",
@@ -1073,7 +934,7 @@ elif st.session_state.page == "Cost Analytics":
             text_auto=".2s"
         )
 
-        chart.update_layout(
+        fig.update_layout(
             height=460,
             xaxis_title="Cost ($)",
             yaxis_title="",
@@ -1085,20 +946,20 @@ elif st.session_state.page == "Cost Analytics":
             )
         )
 
-        chart.update_yaxes(
+        fig.update_yaxes(
             categoryorder="total ascending"
         )
 
         st.plotly_chart(
-            chart,
+            fig,
             use_container_width=True
         )
 
     else:
 
         st.info(
-            "Add project costs in the Cost Estimator to "
-            "generate analytics."
+            "Add project costs in the Cost Estimator "
+            "to generate analytics."
         )
 
     left, right = st.columns(2)
@@ -1106,12 +967,7 @@ elif st.session_state.page == "Cost Analytics":
     with left:
 
         st.markdown(
-            """
-            <div class="section-title">
-                Category summary
-            </div>
-            """,
-            unsafe_allow_html=True
+            "#### Category summary"
         )
 
         st.dataframe(
@@ -1129,12 +985,7 @@ elif st.session_state.page == "Cost Analytics":
     with right:
 
         st.markdown(
-            """
-            <div class="section-title">
-                Markup summary
-            </div>
-            """,
-            unsafe_allow_html=True
+            "#### Markup summary"
         )
 
         markup_df = pd.DataFrame(
@@ -1179,29 +1030,29 @@ elif st.session_state.page == "Project Information":
 
     page_header(
         "Project Information",
-        "Keep the basic information associated with your "
-        "construction estimate organized in one place."
+        "Keep the information associated with your construction "
+        "estimate organized in one place."
     )
 
-    col1, col2 = st.columns(2)
+    left, right = st.columns(2)
 
-    with col1:
+    with left:
 
         st.session_state.project_name = st.text_input(
             "Project name",
-            value=st.session_state.project_name
+            st.session_state.project_name
         )
 
         st.session_state.client = st.text_input(
             "Client",
-            value=st.session_state.client
+            st.session_state.client
         )
 
-    with col2:
+    with right:
 
         st.session_state.project_location = st.text_input(
             "Project location",
-            value=st.session_state.project_location
+            st.session_state.project_location
         )
 
         project_types = [
@@ -1216,7 +1067,8 @@ elif st.session_state.page == "Project Information":
 
         current_type = (
             st.session_state.project_type
-            if st.session_state.project_type in project_types
+            if st.session_state.project_type
+            in project_types
             else "Other"
         )
 
@@ -1230,11 +1082,11 @@ elif st.session_state.page == "Project Information":
 
     st.session_state.project_notes = st.text_area(
         "Project notes",
-        value=st.session_state.project_notes,
+        st.session_state.project_notes,
         height=160,
         placeholder=(
-            "Enter project scope, assumptions, estimate notes, "
-            "or other important information..."
+            "Scope, assumptions, estimate notes, "
+            "or other project information..."
         )
     )
 
@@ -1243,27 +1095,25 @@ elif st.session_state.page == "Project Information":
     )
 
     st.markdown(
-        """
-        <div class="section-title">
-            Project snapshot
-        </div>
-        """,
+        '<div class="section-title">'
+        'Project snapshot'
+        '</div>',
         unsafe_allow_html=True
     )
 
-    snapshot1, snapshot2, snapshot3 = st.columns(3)
+    s1, s2, s3 = st.columns(3)
 
-    snapshot1.metric(
+    s1.metric(
         "Estimated Cost",
         f"${grand_total:,.0f}"
     )
 
-    snapshot2.metric(
+    s2.metric(
         "Estimate Items",
         len(current_df)
     )
 
-    snapshot3.metric(
+    s3.metric(
         "Project Type",
         st.session_state.project_type
     )
@@ -1279,94 +1129,83 @@ elif st.session_state.page == "About BuildCost":
 
     page_header(
         "About BuildCost",
-        "A simpler approach to early-stage construction cost planning."
+        "A simpler approach to early-stage "
+        "construction cost planning."
+    )
+
+    about_html = (
+        '<div class="hero">'
+        '<div class="hero-badge">'
+        'OUR PURPOSE'
+        '</div>'
+        '<h1 style="font-size:3.4rem;">'
+        'Better cost visibility.'
+        '<br>'
+        '<span style="color:#FB923C;">'
+        'Better project planning.'
+        '</span>'
+        '</h1>'
+        '<p>'
+        'BuildCost was created to make construction cost '
+        'estimating more accessible, organized, and visual. '
+        'It turns quantities and unit pricing into an '
+        'understandable early-stage project estimate.'
+        '</p>'
+        '</div>'
     )
 
     st.markdown(
-        """
-        <div class="hero">
-
-            <div class="hero-badge">
-                OUR PURPOSE
-            </div>
-
-            <h1 style="font-size:3.4rem;">
-                Better cost visibility.<br>
-                Better project decisions.
-            </h1>
-
-            <p>
-                BuildCost was created to make construction cost
-                estimating more accessible, organized, and visual.
-                The platform gives project teams a straightforward
-                way to turn quantities and unit pricing into an
-                understandable early-stage project estimate.
-            </p>
-
-        </div>
-        """,
+        about_html,
         unsafe_allow_html=True
     )
 
     c1, c2, c3 = st.columns(3)
 
-    with c1:
-
-        st.markdown(
-            """
-            <div class="feature-card">
-                <div class="feature-number">MISSION</div>
-                <h3>Simplify estimating</h3>
-                <p>
-                    Reduce the friction involved in organizing
-                    quantities, unit pricing, and early project
-                    cost assumptions.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
+    about_cards = [
+        (
+            "MISSION",
+            "Simplify estimating",
+            "Reduce the friction involved in organizing quantities, "
+            "unit pricing, and project cost assumptions."
+        ),
+        (
+            "DESIGN",
+            "Make costs understandable",
+            "Transform cost information into summaries and "
+            "visualizations that are easier to interpret."
+        ),
+        (
+            "FUTURE",
+            "Build a smarter platform",
+            "Expand into saved projects, location-based pricing, "
+            "labor and equipment breakdowns, and reporting."
         )
+    ]
 
-    with c2:
+    for column, card in zip(
+        [c1, c2, c3],
+        about_cards
+    ):
 
-        st.markdown(
-            """
-            <div class="feature-card">
-                <div class="feature-number">DESIGN</div>
-                <h3>Make costs understandable</h3>
-                <p>
-                    Transform rows of cost information into
-                    summaries and visualizations that are easier
-                    to interpret.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        with column:
 
-    with c3:
+            card_html = (
+                '<div class="card">'
+                f'<div class="eyebrow">{card[0]}</div>'
+                f'<h3>{card[1]}</h3>'
+                f'<p>{card[2]}</p>'
+                '</div>'
+            )
 
-        st.markdown(
-            """
-            <div class="feature-card">
-                <div class="feature-number">FUTURE</div>
-                <h3>Build a smarter platform</h3>
-                <p>
-                    Expand into saved projects, location-based
-                    pricing, labor and equipment breakdowns,
-                    and professional reporting.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+            st.markdown(
+                card_html,
+                unsafe_allow_html=True
+            )
 
     st.markdown(
-        """
-        <div class="section-title">
-            Built with
-        </div>
-        """,
+        '<div class="section-title">'
+        'Built with'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -1387,26 +1226,22 @@ elif st.session_state.page == "Contact":
     page_header(
         "Contact BuildCost",
         "Have feedback, questions, or an idea for BuildCost? "
-        "Send us a message."
+        "Prepare a message here."
     )
 
     left, right = st.columns(
-        [1.25, 0.75]
+        [1.3, 0.7]
     )
 
     with left:
 
         st.markdown(
-            """
-            <div class="section-title">
-                Let's talk construction.
-            </div>
-
-            <div class="section-subtitle">
-                Tell us what you're interested in and we'll prepare
-                your message.
-            </div>
-            """,
+            '<div class="section-title">'
+            "Let's talk construction."
+            '</div>'
+            '<div class="section-sub">'
+            'Tell us what you are interested in.'
+            '</div>',
             unsafe_allow_html=True
         )
 
@@ -1453,6 +1288,13 @@ elif st.session_state.page == "Contact":
                     "Please enter your name, email, and message."
                 )
 
+            elif CONTACT_EMAIL == "your-email@example.com":
+
+                st.warning(
+                    "Replace CONTACT_EMAIL near the top "
+                    "of app.py with your email first."
+                )
+
             else:
 
                 subject = quote(
@@ -1460,14 +1302,10 @@ elif st.session_state.page == "Contact":
                 )
 
                 body = quote(
-                    f"""
-Name: {contact_name}
-Email: {contact_email}
-Topic: {contact_topic}
-
-Message:
-{contact_message}
-                    """.strip()
+                    f"Name: {contact_name}\n"
+                    f"Email: {contact_email}\n"
+                    f"Topic: {contact_topic}\n\n"
+                    f"Message:\n{contact_message}"
                 )
 
                 mailto_link = (
@@ -1481,35 +1319,35 @@ Message:
                 )
 
                 st.markdown(
-                    f"""
-                    <a href="{mailto_link}">
-                        Open your email app to send the message
-                    </a>
-                    """,
+                    f'<a href="{mailto_link}">'
+                    'Open your email app to send the message'
+                    '</a>',
                     unsafe_allow_html=True
                 )
 
     with right:
 
         st.markdown(
-            """
-            <div class="info-card">
-                <h3>BuildCost</h3>
-                <p>
-                    Construction cost intelligence for contractors,
-                    engineers, developers, and project teams.
-                </p>
-            </div>
+            '<div class="card">'
+            '<div class="eyebrow">BUILDCOST</div>'
+            '<h3>Construction cost intelligence</h3>'
+            '<p>'
+            'Built for clearer early-stage project '
+            'planning and cost analysis.'
+            '</p>'
+            '</div>',
+            unsafe_allow_html=True
+        )
 
-            <div class="info-card">
-                <h3>Product feedback</h3>
-                <p>
-                    Have an idea that could improve estimating,
-                    analytics, reporting, or project workflows?
-                    We'd like to hear it.
-                </p>
-            </div>
-            """,
+        st.markdown(
+            '<div class="card">'
+            '<div class="eyebrow">FEEDBACK</div>'
+            '<h3>Help improve BuildCost</h3>'
+            '<p>'
+            'Share ideas for estimating, analytics, '
+            'reporting, or future project workflows.'
+            '</p>'
+            '</div>',
             unsafe_allow_html=True
         )
 
