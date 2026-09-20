@@ -41,6 +41,18 @@ if 'items' not in st.session_state:
 
 st.markdown('### Estimate Items')
 st.caption('Edit cells directly. Add or delete rows using the table controls.')
+# Make sure table columns have consistent data types
+st.session_state.items["Item"] = st.session_state.items["Item"].astype(str)
+st.session_state.items["Category"] = st.session_state.items["Category"].astype(str)
+st.session_state.items["Unit"] = st.session_state.items["Unit"].astype(str)
+
+st.session_state.items["Quantity"] = pd.to_numeric(
+    st.session_state.items["Quantity"], errors="coerce"
+).fillna(0.0)
+
+st.session_state.items["Unit Cost"] = pd.to_numeric(
+    st.session_state.items["Unit Cost"], errors="coerce"
+).fillna(0.0)
 edited = st.data_editor(
     st.session_state.items,
     num_rows='dynamic',
