@@ -218,14 +218,7 @@ st.caption(
 
 
 # Make sure session data is always a DataFrame
-st.session_state.items = pd.DataFrame(
-    st.session_state.items,
-    columns=[
-        "Category",
-        "Item",
-        "Quantity",
-        "Unit",
-        "Unit Cost ($)"
+
     ]
 )
 
