@@ -4,18 +4,18 @@ import plotly.express as px
 
 
 # --------------------------------------------------
-# PAGE SETTINGS
+# PAGE CONFIGURATION
 # --------------------------------------------------
 
 st.set_page_config(
-    page_title="BuildCost | Construction Cost Estimator",
+    page_title="BuildCost",
     page_icon="🏗️",
     layout="wide"
 )
 
 
 # --------------------------------------------------
-# CUSTOM CSS
+# CUSTOM DESIGN
 # --------------------------------------------------
 
 st.markdown(
@@ -27,29 +27,29 @@ st.markdown(
         padding-bottom: 3rem;
     }
 
-    [data-testid="stMetric"] {
-        background: rgba(120, 120, 120, 0.08);
-        border: 1px solid rgba(120, 120, 120, 0.18);
-        padding: 18px;
-        border-radius: 14px;
-    }
-
     .hero {
-        padding: 22px 26px;
+        padding: 24px 28px;
         border-radius: 18px;
         background: linear-gradient(135deg, #18222f, #31455d);
         color: white;
-        margin-bottom: 22px;
+        margin-bottom: 24px;
     }
 
     .hero h1 {
         margin: 0;
-        font-size: 2.2rem;
+        font-size: 2.4rem;
     }
 
     .hero p {
-        margin: 0.35rem 0 0;
-        opacity: 0.85;
+        margin: .4rem 0 0;
+        opacity: .88;
+    }
+
+    [data-testid="stMetric"] {
+        background: rgba(120,120,120,.08);
+        border: 1px solid rgba(120,120,120,.18);
+        padding: 16px;
+        border-radius: 14px;
     }
 
     </style>
@@ -67,8 +67,8 @@ st.markdown(
     <div class="hero">
         <h1>🏗️ BuildCost</h1>
         <p>
-            Construction Cost Estimator • Plan quantities,
-            pricing, markups, and total project cost.
+            Construction Cost Estimator • Quantities,
+            unit pricing, markups, and project totals.
         </p>
     </div>
     """,
@@ -77,7 +77,7 @@ st.markdown(
 
 
 # --------------------------------------------------
-# SIDEBAR - PROJECT SETTINGS
+# SIDEBAR
 # --------------------------------------------------
 
 with st.sidebar:
@@ -100,8 +100,6 @@ with st.sidebar:
     )
 
     st.divider()
-
-    st.subheader("Project Markups")
 
     contingency = st.number_input(
         "Contingency (%)",
@@ -132,7 +130,7 @@ with st.sidebar:
 # PROJECT INFORMATION
 # --------------------------------------------------
 
-st.subheader(project_name)
+st.title(project_name)
 
 st.caption(
     f"{client} • {location}"
@@ -140,176 +138,159 @@ st.caption(
 
 
 # --------------------------------------------------
-# DEFAULT ESTIMATE ITEMS
+# DEFAULT ESTIMATE DATA
 # --------------------------------------------------
 
-if "items" not in st.session_state:
+DEFAULT_ITEMS = pd.DataFrame(
 
-    st.session_state.items = pd.DataFrame(
+    [
+
         [
-            [
-                "Earthwork",
-                "Excavation",
-                800.0,
-                "CY",
-                12.50
-            ],
-
-            [
-                "Concrete",
-                "Concrete",
-                120.0,
-                "CY",
-                165.00
-            ],
-
-            [
-                "Paving",
-                "Asphalt",
-                500.0,
-                "TON",
-                95.00
-            ],
-
-            [
-                "Utilities",
-                "Storm Pipe",
-                600.0,
-                "LF",
-                42.00
-            ],
-
-            [
-                "Utilities",
-                "Sanitary Sewer Pipe",
-                350.0,
-                "LF",
-                55.00
-            ],
-
-            [
-                "Site",
-                "Curb & Gutter",
-                900.0,
-                "LF",
-                24.00
-            ],
+            "Earthwork",
+            "Excavation",
+            800.0,
+            "CY",
+            12.50
         ],
 
-        columns=[
-            "Category",
-            "Item",
-            "Quantity",
-            "Unit",
-            "Unit Cost ($)"
+        [
+            "Concrete",
+            "Concrete",
+            120.0,
+            "CY",
+            165.00
+        ],
+
+        [
+            "Paving",
+            "Asphalt",
+            500.0,
+            "TON",
+            95.00
+        ],
+
+        [
+            "Utilities",
+            "Storm Pipe",
+            600.0,
+            "LF",
+            42.00
+        ],
+
+        [
+            "Utilities",
+            "Sanitary Sewer Pipe",
+            350.0,
+            "LF",
+            55.00
+        ],
+
+        [
+            "Site",
+            "Curb & Gutter",
+            900.0,
+            "LF",
+            24.00
         ]
-    )
+
+    ],
+
+    columns=[
+        "Category",
+        "Item",
+        "Quantity",
+        "Unit",
+        "Unit Cost ($)"
+    ]
+
+)
 
 
 # --------------------------------------------------
 # ESTIMATE TABLE
 # --------------------------------------------------
 
-st.markdown("### Estimate Items")
+st.markdown(
+    "### Estimate Items"
+)
 
 st.caption(
-    "Edit cells directly. Add or delete rows using the table controls."
+    "Edit cells directly. Use the table controls to add or delete rows."
 )
 
 
-# Make sure session data is always a DataFrame
+edited = st.data_editor(
 
-    ]
+    DEFAULT_ITEMS,
+
+    num_rows="dynamic",
+
+    hide_index=True,
+
+    use_container_width=True,
+
+    column_config={
+
+        "Category":
+            st.column_config.TextColumn(
+                "Category"
+            ),
+
+        "Item":
+            st.column_config.TextColumn(
+                "Item"
+            ),
+
+        "Quantity":
+            st.column_config.NumberColumn(
+                "Quantity",
+                min_value=0.0,
+                step=1.0,
+                format="%.2f"
+            ),
+
+        "Unit":
+            st.column_config.TextColumn(
+                "Unit"
+            ),
+
+        "Unit Cost ($)":
+            st.column_config.NumberColumn(
+                "Unit Cost ($)",
+                min_value=0.0,
+                step=1.0,
+                format="$%.2f"
+            )
+
+    },
+
+    key="estimate_editor"
+
 )
 
 
 # --------------------------------------------------
-# CLEAN DATA TYPES
+# CLEAN DATA
 # --------------------------------------------------
 
-# Text columns
+df = edited.copy()
+
+
+# Clean text columns
 for column in [
     "Category",
     "Item",
     "Unit"
 ]:
 
-    st.session_state.items[column] = (
-        st.session_state.items[column]
+    df[column] = (
+        df[column]
         .fillna("")
         .astype(str)
     )
 
 
-# Numeric columns
-for column in [
-    "Quantity",
-    "Unit Cost ($)"
-]:
-
-    st.session_state.items[column] = pd.to_numeric(
-        st.session_state.items[column],
-        errors="coerce"
-    ).fillna(0.0)
-
-
-# --------------------------------------------------
-# EDITABLE TABLE
-# --------------------------------------------------
-
-edited = st.data_editor(
-
-    st.session_state.items,
-
-    num_rows="dynamic",
-
-    use_container_width=True,
-
-    hide_index=True,
-
-    column_config={
-
-        "Category": st.column_config.TextColumn(
-            "Category"
-        ),
-
-        "Item": st.column_config.TextColumn(
-            "Item"
-        ),
-
-        "Quantity": st.column_config.NumberColumn(
-            "Quantity",
-            min_value=0.0,
-            format="%.2f"
-        ),
-
-        "Unit": st.column_config.TextColumn(
-            "Unit"
-        ),
-
-        "Unit Cost ($)": st.column_config.NumberColumn(
-            "Unit Cost ($)",
-            min_value=0.0,
-            format="$%.2f"
-        ),
-    },
-
-    key="cost_editor"
-)
-
-
-# Save edited table
-st.session_state.items = edited
-
-
-# --------------------------------------------------
-# CALCULATIONS
-# --------------------------------------------------
-
-df = edited.copy()
-
-
-# Make sure numeric columns stay numeric
+# Clean numeric columns
 for column in [
     "Quantity",
     "Unit Cost ($)"
@@ -321,7 +302,10 @@ for column in [
     ).fillna(0.0)
 
 
-# Calculate each item's total cost
+# --------------------------------------------------
+# CALCULATE ITEM COSTS
+# --------------------------------------------------
+
 df["Total Cost"] = (
     df["Quantity"]
     *
@@ -330,10 +314,12 @@ df["Total Cost"] = (
 
 
 # --------------------------------------------------
-# PROJECT TOTALS
+# PROJECT COST CALCULATIONS
 # --------------------------------------------------
 
-direct_cost = df["Total Cost"].sum()
+direct_cost = float(
+    df["Total Cost"].sum()
+)
 
 
 contingency_cost = (
@@ -341,7 +327,7 @@ contingency_cost = (
     *
     contingency
     /
-    100
+    100.0
 )
 
 
@@ -350,11 +336,11 @@ overhead_cost = (
     *
     overhead
     /
-    100
+    100.0
 )
 
 
-base_with_markup = (
+subtotal = (
     direct_cost
     +
     contingency_cost
@@ -364,16 +350,16 @@ base_with_markup = (
 
 
 profit_cost = (
-    base_with_markup
+    subtotal
     *
     profit
     /
-    100
+    100.0
 )
 
 
 grand_total = (
-    base_with_markup
+    subtotal
     +
     profit_cost
 )
@@ -383,7 +369,9 @@ grand_total = (
 # PROJECT SUMMARY
 # --------------------------------------------------
 
-st.markdown("### Project Summary")
+st.markdown(
+    "### Project Summary"
+)
 
 
 col1, col2, col3, col4 = st.columns(4)
@@ -416,11 +404,11 @@ col4.metric(
 
 
 # --------------------------------------------------
-# CHART + ESTIMATE DETAILS
+# CHART AND DETAILS
 # --------------------------------------------------
 
 left, right = st.columns(
-    [1.25, 1]
+    [1.15, 1]
 )
 
 
@@ -434,31 +422,33 @@ with left:
         "### Cost Breakdown"
     )
 
-    if (
-        not df.empty
-        and
-        direct_cost > 0
-    ):
 
-        category_costs = (
-            df.groupby(
+    if direct_cost > 0 and not df.empty:
+
+        chart_df = df.copy()
+
+
+        chart_df["Category"] = (
+            chart_df["Category"]
+            .replace(
+                "",
+                "Uncategorized"
+            )
+        )
+
+
+        chart_df = (
+            chart_df
+            .groupby(
                 "Category",
-                dropna=False
+                as_index=False
             )["Total Cost"]
             .sum()
-            .reset_index()
         )
 
 
-        category_costs["Category"] = (
-            category_costs["Category"]
-            .replace("", "Uncategorized")
-            .fillna("Uncategorized")
-        )
-
-
-        category_costs = (
-            category_costs
+        chart_df = (
+            chart_df
             .sort_values(
                 "Total Cost",
                 ascending=False
@@ -468,30 +458,32 @@ with left:
 
         fig = px.bar(
 
-            category_costs,
+            chart_df,
 
             x="Category",
 
             y="Total Cost",
 
             text_auto=".2s"
+
         )
 
 
         fig.update_layout(
 
-            yaxis_title="Cost ($)",
+            height=390,
 
             xaxis_title="",
+
+            yaxis_title="Cost ($)",
 
             margin=dict(
                 l=10,
                 r=10,
                 t=10,
                 b=10
-            ),
+            )
 
-            height=390
         )
 
 
@@ -504,7 +496,7 @@ with left:
     else:
 
         st.info(
-            "Add estimate items to generate a chart."
+            "Enter quantities and unit costs to generate the chart."
         )
 
 
@@ -519,25 +511,22 @@ with right:
     )
 
 
-    display_df = df[
-        [
-            "Category",
-            "Item",
-            "Quantity",
-            "Unit",
-            "Unit Cost ($)",
-            "Total Cost"
-        ]
-    ]
-
-
     st.dataframe(
 
-        display_df,
-
-        use_container_width=True,
+        df[
+            [
+                "Category",
+                "Item",
+                "Quantity",
+                "Unit",
+                "Unit Cost ($)",
+                "Total Cost"
+            ]
+        ],
 
         hide_index=True,
+
+        use_container_width=True,
 
         column_config={
 
@@ -554,13 +543,15 @@ with right:
             "Total Cost":
                 st.column_config.NumberColumn(
                     format="$%.2f"
-                ),
+                )
+
         }
+
     )
 
 
 # --------------------------------------------------
-# MARKUP DETAILS
+# COST SUMMARY
 # --------------------------------------------------
 
 st.markdown(
@@ -569,6 +560,7 @@ st.markdown(
 
 
 summary = pd.DataFrame(
+
     {
 
         "Description": [
@@ -582,6 +574,7 @@ summary = pd.DataFrame(
             f"Profit ({profit:.1f}%)",
 
             "Estimated Total"
+
         ],
 
         "Amount": [
@@ -595,8 +588,11 @@ summary = pd.DataFrame(
             profit_cost,
 
             grand_total
+
         ]
+
     }
+
 )
 
 
@@ -604,9 +600,9 @@ st.dataframe(
 
     summary,
 
-    use_container_width=True,
-
     hide_index=True,
+
+    use_container_width=True,
 
     column_config={
 
@@ -614,7 +610,9 @@ st.dataframe(
             st.column_config.NumberColumn(
                 format="$%.2f"
             )
+
     }
+
 )
 
 
@@ -623,14 +621,11 @@ st.dataframe(
 # --------------------------------------------------
 
 st.markdown(
-    "### Export Estimate"
+    "### Export"
 )
 
 
-export_df = df.copy()
-
-
-csv = export_df.to_csv(
+csv = df.to_csv(
     index=False
 ).encode(
     "utf-8"
@@ -639,13 +634,14 @@ csv = export_df.to_csv(
 
 st.download_button(
 
-    label="⬇️ Download Estimate CSV",
+    "⬇️ Download Estimate CSV",
 
     data=csv,
 
     file_name="construction_estimate.csv",
 
     mime="text/csv"
+
 )
 
 
@@ -658,8 +654,7 @@ st.divider()
 
 st.caption(
     """
-    BuildCost v1.0 • Unit costs are user-provided estimates
-    and should be verified for the specific project,
-    location, and date.
+    BuildCost v1.1 • Unit costs are user-provided estimates
+    and should be verified for the project location and date.
     """
 )
